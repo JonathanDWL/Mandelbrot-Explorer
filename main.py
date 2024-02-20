@@ -112,10 +112,10 @@ class dashboard(pygame.sprite.Sprite):
 class button(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, text):
         super(button, self).__init__()
-        self.width = width
-        self.height = height
+        self.width = width - 8
+        self.height = height - 8
         self.image = pygame.Surface((self.width, self.height))
-        self.rect = self.image.get_rect(topleft = (x, y))
+        self.rect = self.image.get_rect(topleft = (x + 4, y + 4))
         self.size = int(2.5*self.width/len(text))
         self.font = pygame.font.Font(None, self.size)
         self.text = text
@@ -136,7 +136,6 @@ class button(pygame.sprite.Sprite):
         self.image.fill((149, 143, 179))
         self.image.blit(self.textrendered, self.textrect)
         if(colliding):
-            print("YARGHH!")
             self.image.blit(self.blacken, self.blackenrect.topleft)
         if(clicking):
             self.image.blit(self.blacken, self.blackenrect.topleft)
@@ -199,7 +198,6 @@ while running:
             clicking = pygame.mouse.get_pressed()[0]
         else:
             clicking = False
-        print(colliding,clicking)
         button.draw(colliding, clicking)
 
     pygame.display.flip()

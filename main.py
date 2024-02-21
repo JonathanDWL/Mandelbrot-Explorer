@@ -8,6 +8,7 @@ Centering text on a surface: https://stackoverflow.com/questions/23982907/how-to
 import pygame
 import sys
 from PIL import Image
+from copy import deepcopy
 
 pygame.init()
 
@@ -58,7 +59,7 @@ def gensetjul(res, iter, center, cols):
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
-                pixels[x,y] = cols[numS%160]
+                pixels[x,y] = cols[numS%80]
     return(canvas)
 
 class setdisplay(pygame.sprite.Sprite):
@@ -125,6 +126,7 @@ class button(pygame.sprite.Sprite):
         self.blacken = self.blacken.convert_alpha()
         self.blackenrect = self.blacken.get_rect(topleft = (0, 0))
         self.blacken.fill((0, 0, 0, 15))
+        self.canpress = True
 
     def collision(self, pos):
         mx, my = pos
@@ -137,28 +139,67 @@ class button(pygame.sprite.Sprite):
         self.image.blit(self.textrendered, self.textrect)
         if(colliding):
             self.image.blit(self.blacken, self.blackenrect.topleft)
-        if(clicking):
-            self.image.blit(self.blacken, self.blackenrect.topleft)
+            if(clicking and self.canpress):
+                self.image.blit(self.blacken, self.blackenrect.topleft)
+                self.function()
+                self.canpress = False
+        if(not clicking):
+            self.canpress = True
+
+    def changetext(self, text):
+        self.size = int(2.5*self.width/len(text))
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+    
+    def function(self):
+        pass
+
+class buttonjulia(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttonjulia, self).__init__(x, y, width, height, text)
+
+    def function(self):
+        global focusjulia
+        if(focusjulia):
+            focusjulia = False
+            self.changetext("Focus Julia")
+            #buffer = deepcopy(Image.open("set.png"))
+            Image.open("set3.png").save("set.png")
+            #buffer.save("set3.png")
+            gensetjul(70, 500, center, scheme[1]).save("set2.png")
+            display.switch("set.png")
+            display2.switch("set2.png")
+        else:
+            focusjulia = True
+            self.changetext("Unfocus Julia")
+            Image.open("set.png").save("set3.png")
+            gensetjul(700, 500, center, scheme[1]).save("set.png")
+            gensetman(70, 500, center, zoom, scheme[0]).save("set2.png")
+            display.switch("set.png")
+            display2.switch("set2.png")
 
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Mandelbrot Explorer")
 
 clock = pygame.time.Clock()
 
-cols1 = [(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)]
-cols2 = [(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)]
-fullscheme = gradient(cols1, 80) + gradient(cols2, 80)
+scheme1M = gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 80) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 80)
+scheme1J = gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 40) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 40)
+scheme = scheme1M, scheme1J
 center = complex(0, 0)
 zoom = 1
+focusjulia = False
 
 # genset(700, 500, complex(0.5, 0.5), 2, fullscheme).save("set.png")
 display = setdisplay("defaultset.png", 0, 0)
-gensetjul(100, 500, 0, fullscheme).save("defaultset2.png")
-display2 = setdisplay("defaultset2.png", 900, 0)
+gensetjul(70, 500, 0, scheme[1]).save("defaultset2.png")
+display2 = setdisplay("defaultset2.png", 930, 0)
 user = user()
 dashboard = dashboard()
 buttons = pygame.sprite.Group()
-buttons.add(button(700, 0, 200, 100, "Focus Julia"))
+buttons.add(buttonjulia(700, 0, 230, 70, "Focus Julia"))
 
 running = True
 while running:
@@ -179,8 +220,8 @@ while running:
         user.scale(wheelscroll)
         if(pygame.mouse.get_pressed()[0]):
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
-            gensetman(700, 500, center, zoom, fullscheme).save("set.png")
-            gensetjul(100, 500, center, fullscheme).save("set2.png")
+            gensetman(700, 500, center, zoom, scheme[0]).save("set.png")
+            gensetjul(70, 500, center, scheme[1]).save("set2.png")
             display.switch("set.png")
             display2.switch("set2.png")
 
@@ -194,11 +235,7 @@ while running:
             colliding = button.collision(mousepos)
         else:
             colliding = False
-        if(colliding):
-            clicking = pygame.mouse.get_pressed()[0]
-        else:
-            clicking = False
-        button.draw(colliding, clicking)
+        button.draw(colliding, pygame.mouse.get_pressed()[0])
 
     pygame.display.flip()
 

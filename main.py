@@ -108,7 +108,10 @@ class user(pygame.sprite.Sprite):
         if(pos != None):
             mx, my = pos
             self.rect.centerx = mx
-            self.rect.centery = my
+            if(not axismode):
+                self.rect.centery = my
+            else:
+                self.rect.centery = 350
 
     def scale(self, scroll):
         self.size += scroll * -10
@@ -124,6 +127,8 @@ class user(pygame.sprite.Sprite):
         halfres = res/2-0.5
         mx, my = pos
         newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(-2/zoom)+center.imag)
+        if(axismode):
+            newcenter = complex(newcenter.real, 0)
         newzoom = zoom * res/self.size
         return(newcenter, newzoom)
     
@@ -313,6 +318,27 @@ class buttonchangescheme(button):
         elif(schemes.index(scheme) == 2):
             schemedisplay.changetext("Palette: Ice & Fire")
 
+class buttontoggleaxismode(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttontoggleaxismode, self).__init__(x, y, width, height, text)
+
+    def function(self):
+        global axismode
+        if(zoom == 1):
+            if(not axismode):
+                axismode = True
+                self.changetext("Disable Axis Mode")
+            else:
+                axismode = False
+                self.changetext("Enable Axis Mode")
+
+    def update(self):
+        if(zoom != 1):
+            if(axismode):
+                self.changetext("Axis Mode Locked On")
+            else:
+                self.changetext("Axis Mode Locked Off")
+
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Mandelbrot Explorer")
 
@@ -328,6 +354,7 @@ iteration = 300
 zoomjulia = False
 focusjulia = False
 juliazoom = 1
+axismode = False
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -345,6 +372,7 @@ buttons.add(buttonchangeiter(925, 210, 75, 70, "+10", 10))
 schemedisplay = textdisplay(750, 280, 200, 70, "Palette: Standard")
 buttons.add(buttonchangescheme(700, 280, 75, 70, "Prev", -1))
 buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
+buttons.add(buttontoggleaxismode(700, 350, 300, 70, "Enable Axis Mode"))
 
 running = True
 while running:
@@ -367,10 +395,8 @@ while running:
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
             if(zoomjulia):
                 juliazoom = zoom
-            gensetman(700, iteration, center, zoom, scheme).save("set.png")
-            gensetjul(70, iteration, center, juliazoom, scheme).save("set2.png")
-            display.switch("set.png")
-            display2.switch("set2.png")
+            reloadmandelbrot()
+            reloadjulia()
 
     screen.blit(display.image, display.rect.topleft)
     if(focusjulia == False):

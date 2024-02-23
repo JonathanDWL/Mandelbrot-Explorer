@@ -4,6 +4,8 @@ How the Mandelbrot Set works: https://plus.maths.org/content/what-mandelbrot-set
 
 Centering text on a surface: https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame
 
+Help with creating color schemes: https://mycolor.space/gradient
+
 '''
 
 
@@ -132,6 +134,31 @@ class dashboard(pygame.sprite.Sprite):
         self.image.fill((178, 179, 207))
         self.rect = self.image.get_rect(topleft = (700, 0))
 
+class textdisplay(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height, text):
+        super(textdisplay, self).__init__()
+        self.width = width
+        self.height = height
+        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect(topleft = (x, y))
+        self.size = int(2*self.width/len(text))
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+
+    def draw(self):
+        self.image.fill((178, 179, 207))
+        self.image.blit(self.textrendered, self.textrect)
+
+    def changetext(self, text):
+        self.size = int(2*self.width/len(text))
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+
 class button(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, text):
         super(button, self).__init__()
@@ -176,6 +203,9 @@ class button(pygame.sprite.Sprite):
         self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
     
     def function(self):
+        pass
+
+    def update(self):
         pass
 
 class buttonfocusjulia(button):
@@ -231,43 +261,70 @@ class buttonchangeiter(button):
     def function(self):
         global iteration
         iteration += self.amount
-        iterdisplay.changetext("Iteration: "+str(iteration))
+        if(iteration <= 0):
+            iteration = 0
+        iterdisplay.changetext("Iterate: "+str(iteration))
 
-class textdisplay(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, text):
-        super(textdisplay, self).__init__()
-        self.width = width
-        self.height = height
-        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
-        self.image = self.image.convert_alpha()
-        self.rect = self.image.get_rect(topleft = (x, y))
-        self.size = int(2*self.width/len(text))
-        self.font = pygame.font.Font(None, self.size)
-        self.text = text
-        self.textrendered = self.font.render(self.text, False, "WHITE")
-        self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+    def update(self):
+        if(iteration < 500):
+            if(iteration < 50):
+                if(iteration < 20):
+                    self.amount *= 1 / abs(self.amount)
+                elif(iteration == 20):
+                    if(self.amount / abs(self.amount) == -1):
+                        self.amount = -1
+                    else:
+                        self.amount = 5
+                else:
+                    self.amount *= 5 / abs(self.amount)
+            elif(iteration == 50):
+                if(self.amount / abs(self.amount) == -1):
+                    self.amount = -5
+                else:
+                    self.amount = 10
+            else:
+                self.amount *= 10 / abs(self.amount)
+        elif(iteration == 500):
+            if(self.amount / abs(self.amount) == -1):
+                self.amount = -10
+            else:
+                self.amount = 100
+        else:
+            self.amount *= 100 / abs(self.amount)
 
-    def draw(self):
-        self.image.fill((178, 179, 207))
-        self.image.blit(self.textrendered, self.textrect)
+        self.amount = int(self.amount)
+        symbol = ""
+        if(self.amount / abs(self.amount) == 1):
+            symbol = "+"
+        self.changetext(symbol+str(self.amount))
 
-    def changetext(self, text):
-        self.size = int(2*self.width/len(text))
-        self.font = pygame.font.Font(None, self.size)
-        self.text = text
-        self.textrendered = self.font.render(self.text, False, "WHITE")
-        self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+class buttonchangescheme(button):
+    def __init__(self, x, y, width, height, text, amount):
+        super(buttonchangescheme, self).__init__(x, y, width, height, text)
+        self.amount = amount
+
+    def function(self):
+        global scheme
+        scheme = schemes[(schemes.index(scheme)+self.amount)%len(schemes)]
+        if(schemes.index(scheme) == 0):
+            schemedisplay.changetext("Palette: Standard")
+        elif(schemes.index(scheme) == 1):
+            schemedisplay.changetext("Palette: Rose Gold")
+        elif(schemes.index(scheme) == 2):
+            schemedisplay.changetext("Palette: Ice & Fire")
 
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Mandelbrot Explorer")
 
 clock = pygame.time.Clock()
 
-scheme1 = gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 80) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 80)
-scheme = scheme1
+schemes = [gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 80) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 80),
+gradient([(55, 5, 50), (120, 55, 72), (172, 115, 100), (215, 182, 146), (252, 252, 212)], 80) + gradient([(252, 252, 212), (215, 182, 146), (172, 115, 100), (120, 55, 72), (55, 5, 50)], 80),
+gradient([(48, 5, 56), (55, 48, 104), (45, 89, 148), (16, 131, 186), (0, 174, 215), (52, 196, 221), (93, 217, 224), (132, 238, 227), (165, 243, 223), (193, 247, 222), (217, 251, 227), (237, 255, 235)], 80) + gradient([(237, 255, 235), (225, 248, 208), (220, 240, 179), (220, 229, 147), (226, 217, 115), (228, 188, 90), (228, 159, 74), (224, 129, 66), (195, 83, 71), (153, 45, 74), (102, 18, 70), (48, 5, 56)], 80)]
+scheme = schemes[0]
 center = complex(0, 0)
 zoom = 1
-iteration = 500
+iteration = 300
 zoomjulia = False
 focusjulia = False
 juliazoom = 1
@@ -282,11 +339,12 @@ buttons = pygame.sprite.Group()
 buttons.add(buttonfocusjulia(700, 0, 230, 70, "Focus Julia"))
 buttons.add(buttonzoomjulia(700, 70, 300, 70, "Zoom Julia"))
 buttons.add(buttonreloadall(700, 140, 300, 70, "Reload All"))
-buttons.add(buttonchangeiter(700, 210, 50, 70, "-10", -10))
-#buttons.add(buttonchangeiter(750, 210, 25, 70, "-1", -1))
-buttons.add(buttonchangeiter(950, 210, 50, 70, "+10", 10))
-#buttons.add(buttonchangeiter(850, 210, 25, 70, "+1", 1))
-iterdisplay = textdisplay(750, 210, 200, 70, "Iteration: "+str(iteration))
+iterdisplay = textdisplay(750, 210, 200, 70, "Iterate: "+str(iteration))
+buttons.add(buttonchangeiter(700, 210, 75, 70, "-10", -10))
+buttons.add(buttonchangeiter(925, 210, 75, 70, "+10", 10))
+schemedisplay = textdisplay(750, 280, 200, 70, "Palette: Standard")
+buttons.add(buttonchangescheme(700, 280, 75, 70, "Prev", -1))
+buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
 
 running = True
 while running:
@@ -319,15 +377,18 @@ while running:
         screen.blit(user.image, user.rect.topleft)
     screen.blit(dashboard.image, dashboard.rect.topleft)
     screen.blit(display2.image, display2.rect.topleft)
+    screen.blit(iterdisplay.image, iterdisplay.rect.topleft)
+    iterdisplay.draw()
+    screen.blit(schemedisplay.image, schemedisplay.rect.topleft)
+    schemedisplay.draw()
     buttons.draw(screen)
     for button in buttons:
         if(mousepos != None):
             colliding = button.collision(mousepos)
         else:
             colliding = False
+        button.update()
         button.draw(colliding, pygame.mouse.get_pressed()[0])
-    screen.blit(iterdisplay.image, iterdisplay.rect.topleft)
-    iterdisplay.draw()
 
     pygame.display.flip()
 

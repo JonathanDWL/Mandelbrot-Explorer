@@ -39,6 +39,8 @@ def iterate(z, c, iterate):
     return(-1)
 
 def gensetman(res, iter, center, zoom, cols):
+    if(center.imag == 0):
+        return(gensetmanaxis(res, iter, center.real, zoom, cols))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -50,6 +52,23 @@ def gensetman(res, iter, center, zoom, cols):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
+    return(canvas)
+
+def gensetmanaxis(res, iter, center, zoom, cols):
+    canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
+    pixels = canvas.load()
+    for x in range(res):
+        for y in range(res):
+            if(y <= -(-res//2)-1):
+                halfres = res/2-0.5
+                num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
+                numS = iterate(0, num, iter)
+                if(numS < 0):
+                    pixels[x,y] = (0, 0, 0)
+                else:
+                    pixels[x,y] = cols[numS%len(cols)]
+            else:
+                pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
 def gensetjul(res, iter, center, zoom, cols):
@@ -326,12 +345,10 @@ class buttontoggleaxismode(button):
     def function(self):
         global axismode
         if(center.imag == 0 and not axismode):
-            print("Blodge")
             axismode = True
             self.changetext("Disable Axis Mode")
         elif(axismode):
             axismode = False
-            print("Godge")
             self.changetext("Enable Axis Mode")
 
     def update(self):

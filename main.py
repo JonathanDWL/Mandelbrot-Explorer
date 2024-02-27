@@ -77,6 +77,7 @@ def reloadmandelbrot():
     else:
         gensetman(70, iteration, center, zoom, scheme).save("set2.png")
         display2.switch("set2.png")
+        gensetman(700, iteration, center, zoom, scheme).save("set3.png")
 
 def reloadjulia():
     if(focusjulia == False):
@@ -324,19 +325,17 @@ class buttontoggleaxismode(button):
 
     def function(self):
         global axismode
-        if(zoom == 1):
-            if(not axismode):
-                axismode = True
-                self.changetext("Disable Axis Mode")
-            else:
-                axismode = False
-                self.changetext("Enable Axis Mode")
+        if(center.imag == 0 and not axismode):
+            print("Blodge")
+            axismode = True
+            self.changetext("Disable Axis Mode")
+        elif(axismode):
+            axismode = False
+            print("Godge")
+            self.changetext("Enable Axis Mode")
 
     def update(self):
-        if(zoom != 1):
-            if(axismode):
-                self.changetext("Axis Mode Locked On")
-            else:
+        if(center.imag != 0 and not axismode):
                 self.changetext("Axis Mode Locked Off")
 
 screen = pygame.display.set_mode((1000, 700))

@@ -12,7 +12,6 @@ Help with creating color schemes: https://mycolor.space/gradient
 import pygame
 import sys
 from PIL import Image
-from copy import deepcopy
 
 pygame.init()
 

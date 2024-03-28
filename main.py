@@ -29,38 +29,46 @@ def gradient(colors, steps):
         list.append((R, G, B))
     return(list)
 
-def iterate(z, c, iterate):
+def iterman(z, c, iterate):
     for i in range(iterate):
         z = z**2 + c
         if(abs(z) > 2):
             return(i)
     return(-1)
 
-def gensetman(res, iter, center, zoom, cols):
-    if(center.imag == 0):
-        return(gensetmanaxis(res, iter, center.real, zoom, cols))
+def itership(z, c, iterate):
+    for i in range(iterate):
+        z = z**2 + c
+        z = complex(abs(z.real), abs(z.imag))
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def gensetmain(res, iter, center, zoom, cols, func):
+    if(center.imag == 0 and fractal == "Mandelbrot Set"):
+        return(gensetmandelbrotaxis(res, iter, center.real, zoom, cols))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
-            num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
-            numS = iterate(0, num, iter)
+            num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(2/zoom)+center.imag)
+            numS = func(0, num, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def gensetmanaxis(res, iter, center, zoom, cols):
+def gensetmandelbrotaxis(res, iter, center, zoom, cols):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
-                num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
-                numS = iterate(0, num, iter)
+                num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(2/zoom))
+                numS = iterman(0, num, iter)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
@@ -69,7 +77,7 @@ def gensetmanaxis(res, iter, center, zoom, cols):
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
-def gensetmanjul(res, iter, center, zoom, cols):
+def gensetjulia(res, iter, center, zoom, cols, func):
     if(zoom != 1):
         center2 = center
     else:
@@ -79,32 +87,38 @@ def gensetmanjul(res, iter, center, zoom, cols):
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
-            num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
-            numS = iterate(num, center, iter)
+            num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(2/zoom)+center2.imag)
+            numS = func(num, center, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def reloadmain():
+def getfunction(fractal):
     if(fractal == "Mandelbrot Set"):
-        if(focusjulia == False):
-            gensetman(700, iteration, center, zoom, scheme).save("set.png")
-            display.switch("set.png")
-        else:
-            gensetman(70, iteration, center, zoom, scheme).save("set2.png")
-            display2.switch("set2.png")
-            gensetman(700, iteration, center, zoom, scheme).save("set3.png")
+        return(iterman)
+    elif(fractal == "Burning Ship"):
+        return(itership)
+
+def reloadmain():
+    func = getfunction(fractal)
+    if(focusjulia == False):
+        gensetmain(700, iteration, center, zoom, scheme, func).save("set.png")
+        display.switch("set.png")
+    else:
+        gensetmain(70, iteration, center, zoom, scheme, func).save("set2.png")
+        display2.switch("set2.png")
+        gensetmain(700, iteration, center, zoom, scheme, func).save("set3.png")
 
 def reloadjulia():
-    if(fractal == "Mandelbrot Set"):
-        if(focusjulia == False):
-            gensetmanjul(70, iteration, center, juliazoom, scheme).save("set2.png")
-            display2.switch("set2.png")
-        else:
-            gensetmanjul(700, iteration, center, juliazoom, scheme).save("set.png")
-            display.switch("set.png")
+    func = getfunction(fractal)
+    if(focusjulia == False):
+        gensetjulia(70, iteration, center, juliazoom, scheme, func).save("set2.png")
+        display2.switch("set2.png")
+    else:
+        gensetjulia(700, iteration, center, juliazoom, scheme, func).save("set.png")
+        display.switch("set.png")
 
 class setdisplay(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -146,7 +160,7 @@ class user(pygame.sprite.Sprite):
     def get_parameters(self, res, center, zoom, pos):
         halfres = res/2-0.5
         mx, my = pos
-        newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(-2/zoom)+center.imag)
+        newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(2/zoom)+center.imag)
         if(axismode):
             newcenter = complex(newcenter.real, 0)
         newzoom = zoom * res/self.size
@@ -331,7 +345,17 @@ class buttonchangescheme(button):
     def function(self):
         global scheme
         scheme = schemes[(schemes.index(scheme)+self.amount)%len(schemes)]
-        schemedisplay.changetext("Palette: "+names[schemes.index(scheme)])
+        schemedisplay.changetext("Palette: "+schemenames[schemes.index(scheme)])
+
+class buttonchangefractal(button):
+    def __init__(self, x, y, width, height, text, amount):
+        super(buttonchangefractal, self).__init__(x, y, width, height, text)
+        self.amount = amount
+
+    def function(self):
+        global fractal
+        fractal = fractals[(fractals.index(fractal)+self.amount)%len(fractals)]
+        fractalnamedisplay.changetext(fractal)
 
 class buttontoggleaxismode(button):
     def __init__(self, x, y, width, height, text):
@@ -359,12 +383,10 @@ schemes = [gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)
 gradient([(55, 5, 50), (120, 55, 72), (172, 115, 100), (215, 182, 146), (252, 252, 212)], 80) + gradient([(252, 252, 212), (215, 182, 146), (172, 115, 100), (120, 55, 72), (55, 5, 50)], 80),
 gradient([(48, 5, 56), (55, 48, 104), (45, 89, 148), (16, 131, 186), (0, 174, 215), (52, 196, 221), (93, 217, 224), (132, 238, 227), (165, 243, 223), (193, 247, 222), (217, 251, 227), (237, 255, 235)], 80) + gradient([(237, 255, 235), (225, 248, 208), (220, 240, 179), (220, 229, 147), (226, 217, 115), (228, 188, 90), (228, 159, 74), (224, 129, 66), (195, 83, 71), (153, 45, 74), (102, 18, 70), (48, 5, 56)], 80),
 gradient([(45, 7, 112), (0, 63, 153), (0, 102, 172), (0, 136, 176), (0, 168, 174), (63, 186, 172), (105, 202, 169), (145, 218, 165), (176, 226, 173), (203, 233, 186), (227, 241, 201), (246, 250, 220)], 80) + gradient([(246, 250, 220), (237, 224, 183), (233, 195, 151), (230, 165, 129), (224, 133, 117), (213, 108, 112), (198, 83, 112), (179, 60, 115), (154, 38, 114), (125, 19, 114), (91, 7, 114), (45, 7, 112)], 80),
-gradient([(252, 189, 189), (252, 252, 189)], 40) + gradient([(252, 252, 189), (189, 252, 207)], 40) + gradient([(189, 252, 207), (189, 240, 252)], 40) + gradient([(189, 240, 252), (189, 190, 252)], 40) + gradient([(189, 190, 252), (252, 189, 240)], 40) + gradient([(252, 189, 240), (252, 189, 189)], 40),
-gradient([(61, 4, 23), (252, 189, 189)], 80) + gradient([(252, 189, 189), (61, 40, 4)], 80) + gradient([(61, 40, 4), (252, 252, 189)], 80) + gradient([(252, 252, 189), (4, 61, 43)], 80) + gradient([(4, 61, 43), (189, 252, 207)], 80) + gradient([(189, 252, 207), (4, 30, 61)], 80) + gradient([(4, 30, 61), (189, 240, 252)], 80) + gradient([(189, 240, 252), (24, 4, 61)], 80) + gradient([(24, 4, 61), (189, 190, 252)], 80) + gradient([(189, 190, 252), (56, 4, 61)], 80) + gradient([(56, 4, 61), (252, 189, 240)], 80) + gradient([(252, 189, 240), (61, 4, 23)], 80),
-gradient([(247, 87, 129), (247, 177, 101)], 40) + gradient([(247, 177, 101), (242, 250, 130)], 40) + gradient([(242, 250, 130), (101, 247, 106)], 40) + gradient([(101, 247, 106), (101, 247, 242)], 40) + gradient([(101, 247, 242), (87, 98, 247)], 40) + gradient([(87, 98, 247), (233, 109, 247)], 40) + gradient([(233, 109, 247), (247, 87, 129)], 40),
+gradient([(247, 87, 129), (247, 177, 101)], 20) + gradient([(247, 177, 101), (242, 250, 130)], 20) + gradient([(242, 250, 130), (101, 247, 106)], 20) + gradient([(101, 247, 106), (101, 247, 242)], 20) + gradient([(101, 247, 242), (87, 98, 247)], 20) + gradient([(87, 98, 247), (233, 109, 247)], 20) + gradient([(233, 109, 247), (247, 87, 129)], 20),
 gradient([(102, 7, 75), (247, 87, 129)], 80) + gradient([(247, 87, 129), (102, 7, 7)], 80) + gradient([(102, 7, 7), (247, 177, 101)], 80) + gradient([(247, 177, 101), (102, 78, 7)], 80) + gradient([(102, 78, 7), (242, 250, 130)], 80) + gradient([(242, 250, 130), (43, 102, 7)], 80) + gradient([(43, 102, 7), (101, 247, 106)], 80) + gradient([(101, 247, 106), (50, 168, 117)], 80) + gradient([(50, 168, 117), (101, 247, 242)], 80) + gradient([(101, 247, 242), (7, 53, 102)], 80) + gradient([(7, 53, 102), (87, 98, 247)], 80) + gradient([(87, 98, 247), (53, 7, 102)], 80) + gradient([(53, 7, 102), (233, 109, 247)], 80) + gradient([(233, 109, 247), (102, 7, 75)], 80)]
 scheme = schemes[0]
-names = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1A", "Rainbow 1B", "Rainbow 2A", "Rainbow 2B"]
+schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2"]
 center = complex(0, 0)
 zoom = 1
 iteration = 300
@@ -391,7 +413,10 @@ buttons.add(buttonchangeiter(925, 210, 75, 70, "+10", 10))
 schemedisplay = textdisplay(750, 280, 200, 70, "Palette: Standard")
 buttons.add(buttonchangescheme(700, 280, 75, 70, "Prev", -1))
 buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
-buttons.add(buttontoggleaxismode(700, 350, 300, 70, "Enable Axis Mode"))
+fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
+buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
+buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
+buttons.add(buttontoggleaxismode(700, 420, 300, 70, "Enable Axis Mode"))
 
 running = True
 while running:
@@ -426,6 +451,8 @@ while running:
     iterdisplay.draw()
     screen.blit(schemedisplay.image, schemedisplay.rect.topleft)
     schemedisplay.draw()
+    screen.blit(fractalnamedisplay.image, fractalnamedisplay.rect.topleft)
+    fractalnamedisplay.draw()
     buttons.draw(screen)
     for button in buttons:
         if(mousepos != None):

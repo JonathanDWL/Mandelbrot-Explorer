@@ -69,7 +69,7 @@ def gensetmanaxis(res, iter, center, zoom, cols):
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
-def gensetjul(res, iter, center, zoom, cols):
+def gensetmanjul(res, iter, center, zoom, cols):
     if(zoom != 1):
         center2 = center
     else:
@@ -87,22 +87,24 @@ def gensetjul(res, iter, center, zoom, cols):
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def reloadmandelbrot():
-    if(focusjulia == False):
-        gensetman(700, iteration, center, zoom, scheme).save("set.png")
-        display.switch("set.png")
-    else:
-        gensetman(70, iteration, center, zoom, scheme).save("set2.png")
-        display2.switch("set2.png")
-        gensetman(700, iteration, center, zoom, scheme).save("set3.png")
+def reloadmain():
+    if(fractal == "Mandelbrot Set"):
+        if(focusjulia == False):
+            gensetman(700, iteration, center, zoom, scheme).save("set.png")
+            display.switch("set.png")
+        else:
+            gensetman(70, iteration, center, zoom, scheme).save("set2.png")
+            display2.switch("set2.png")
+            gensetman(700, iteration, center, zoom, scheme).save("set3.png")
 
 def reloadjulia():
-    if(focusjulia == False):
-        gensetjul(70, iteration, center, juliazoom, scheme).save("set2.png")
-        display2.switch("set2.png")
-    else:
-        gensetjul(700, iteration, center, juliazoom, scheme).save("set.png")
-        display.switch("set.png")
+    if(fractal == "Mandelbrot Set"):
+        if(focusjulia == False):
+            gensetmanjul(70, iteration, center, juliazoom, scheme).save("set2.png")
+            display2.switch("set2.png")
+        else:
+            gensetmanjul(700, iteration, center, juliazoom, scheme).save("set.png")
+            display.switch("set.png")
 
 class setdisplay(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
@@ -248,7 +250,7 @@ class buttonfocusjulia(button):
             focusjulia = True
             self.changetext("Unfocus Julia")
             Image.open("set.png").save("set3.png")
-            reloadmandelbrot()
+            reloadmain()
             reloadjulia()
 
 class buttonzoomjulia(button):
@@ -273,7 +275,7 @@ class buttonreloadall(button):
         super(buttonreloadall, self).__init__(x, y, width, height, text)
 
     def function(self):
-        reloadmandelbrot()
+        reloadmain()
         reloadjulia()
 
 class buttonchangeiter(button):
@@ -329,20 +331,7 @@ class buttonchangescheme(button):
     def function(self):
         global scheme
         scheme = schemes[(schemes.index(scheme)+self.amount)%len(schemes)]
-        if(schemes.index(scheme) == 0):
-            schemedisplay.changetext("Palette: Standard")
-        elif(schemes.index(scheme) == 1):
-            schemedisplay.changetext("Palette: Rose Gold")
-        elif(schemes.index(scheme) == 2):
-            schemedisplay.changetext("Palette: Ice & Fire")
-        elif(schemes.index(scheme) == 3):
-            schemedisplay.changetext("Palette: Plant Life")
-        elif(schemes.index(scheme) == 4):
-            schemedisplay.changetext("Palette: Rainbow 1A")
-        elif(schemes.index(scheme) == 5):
-            schemedisplay.changetext("Palette: Rainbow 1B")
-        elif(schemes.index(scheme) == 6):
-            schemedisplay.changetext("Palette: Rainbow 2A")
+        schemedisplay.changetext("Palette: "+names[schemes.index(scheme)])
 
 class buttontoggleaxismode(button):
     def __init__(self, x, y, width, height, text):
@@ -372,8 +361,10 @@ gradient([(48, 5, 56), (55, 48, 104), (45, 89, 148), (16, 131, 186), (0, 174, 21
 gradient([(45, 7, 112), (0, 63, 153), (0, 102, 172), (0, 136, 176), (0, 168, 174), (63, 186, 172), (105, 202, 169), (145, 218, 165), (176, 226, 173), (203, 233, 186), (227, 241, 201), (246, 250, 220)], 80) + gradient([(246, 250, 220), (237, 224, 183), (233, 195, 151), (230, 165, 129), (224, 133, 117), (213, 108, 112), (198, 83, 112), (179, 60, 115), (154, 38, 114), (125, 19, 114), (91, 7, 114), (45, 7, 112)], 80),
 gradient([(252, 189, 189), (252, 252, 189)], 40) + gradient([(252, 252, 189), (189, 252, 207)], 40) + gradient([(189, 252, 207), (189, 240, 252)], 40) + gradient([(189, 240, 252), (189, 190, 252)], 40) + gradient([(189, 190, 252), (252, 189, 240)], 40) + gradient([(252, 189, 240), (252, 189, 189)], 40),
 gradient([(61, 4, 23), (252, 189, 189)], 80) + gradient([(252, 189, 189), (61, 40, 4)], 80) + gradient([(61, 40, 4), (252, 252, 189)], 80) + gradient([(252, 252, 189), (4, 61, 43)], 80) + gradient([(4, 61, 43), (189, 252, 207)], 80) + gradient([(189, 252, 207), (4, 30, 61)], 80) + gradient([(4, 30, 61), (189, 240, 252)], 80) + gradient([(189, 240, 252), (24, 4, 61)], 80) + gradient([(24, 4, 61), (189, 190, 252)], 80) + gradient([(189, 190, 252), (56, 4, 61)], 80) + gradient([(56, 4, 61), (252, 189, 240)], 80) + gradient([(252, 189, 240), (61, 4, 23)], 80),
-gradient([(247, 87, 129), (247, 177, 101)], 40) + gradient([(247, 177, 101), (242, 250, 130)], 40) + gradient([(242, 250, 130), (101, 247, 106)], 40) + gradient([(101, 247, 106), (101, 247, 242)], 40) + gradient([(101, 247, 242), (87, 98, 247)], 40) + gradient([(87, 98, 247), (233, 109, 247)], 40) + gradient([(233, 109, 247), (247, 87, 129)], 40)]
+gradient([(247, 87, 129), (247, 177, 101)], 40) + gradient([(247, 177, 101), (242, 250, 130)], 40) + gradient([(242, 250, 130), (101, 247, 106)], 40) + gradient([(101, 247, 106), (101, 247, 242)], 40) + gradient([(101, 247, 242), (87, 98, 247)], 40) + gradient([(87, 98, 247), (233, 109, 247)], 40) + gradient([(233, 109, 247), (247, 87, 129)], 40),
+gradient([(102, 7, 75), (247, 87, 129)], 80) + gradient([(247, 87, 129), (102, 7, 7)], 80) + gradient([(102, 7, 7), (247, 177, 101)], 80) + gradient([(247, 177, 101), (102, 78, 7)], 80) + gradient([(102, 78, 7), (242, 250, 130)], 80) + gradient([(242, 250, 130), (43, 102, 7)], 80) + gradient([(43, 102, 7), (101, 247, 106)], 80) + gradient([(101, 247, 106), (50, 168, 117)], 80) + gradient([(50, 168, 117), (101, 247, 242)], 80) + gradient([(101, 247, 242), (7, 53, 102)], 80) + gradient([(7, 53, 102), (87, 98, 247)], 80) + gradient([(87, 98, 247), (53, 7, 102)], 80) + gradient([(53, 7, 102), (233, 109, 247)], 80) + gradient([(233, 109, 247), (102, 7, 75)], 80)]
 scheme = schemes[0]
+names = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1A", "Rainbow 1B", "Rainbow 2A", "Rainbow 2B"]
 center = complex(0, 0)
 zoom = 1
 iteration = 300
@@ -381,6 +372,8 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
+fractals = ["Mandelbrot Set", "Burning Ship"]
+fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -421,7 +414,7 @@ while running:
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
             if(zoomjulia):
                 juliazoom = zoom
-            reloadmandelbrot()
+            reloadmain()
             reloadjulia()
 
     screen.blit(display.image, display.rect.topleft)

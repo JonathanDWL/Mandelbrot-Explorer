@@ -78,8 +78,8 @@ def itertricorn(z, c, iterate):
     return(-1)
 
 def gensetmain(res, iter, center, zoom, cols, func):
-    if(center.imag == 0 and fractal == "Mandelbrot Set"):
-        return(gensetmandelbrotaxis(res, iter, center.real, zoom, cols))
+    if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
+        return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -93,7 +93,7 @@ def gensetmain(res, iter, center, zoom, cols, func):
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def gensetmandelbrotaxis(res, iter, center, zoom, cols):
+def gensetmainaxis(res, iter, center, zoom, cols, func):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -101,7 +101,7 @@ def gensetmandelbrotaxis(res, iter, center, zoom, cols):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
                 num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
-                numS = iterman(0, num, iter)
+                numS = func(0, num, iter)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:

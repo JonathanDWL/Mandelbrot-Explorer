@@ -36,23 +36,56 @@ def iterman(z, c, iterate):
             return(i)
     return(-1)
 
-def itership(z, c, iterate):
+def itercubic(z, c, iterate):
     for i in range(iterate):
-        z = z**2 + c
-        z = complex(abs(z.real), abs(z.imag))
+        z = z**3 + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def itership(z, c, iterate):
+    z = complex(z.real, -z.imag)
+    c = complex(c.real, -c.imag)
+    for i in range(iterate):
+        z = complex(abs(z.real), abs(z.imag))**2 + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def iterceltic(z, c, iterate):
+    for i in range(iterate):
+        z2 = z**2
+        z = complex(abs(z2.real), z2.imag) + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def iterbuffalo(z, c, iterate):
+    z = complex(-z.real, z.imag)
+    c = complex(-c.real, c.imag)
+    for i in range(iterate):
+        z2 = z**2
+        z = complex(abs(z2.real), abs(z2.imag)) - c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def itertricorn(z, c, iterate):
+    for i in range(iterate):
+        z = complex(z.real, -z.imag)**2 + c
         if(abs(z) > 2):
             return(i)
     return(-1)
 
 def gensetmain(res, iter, center, zoom, cols, func):
-    if(center.imag == 0 and fractal == "Mandelbrot Set"):
-        return(gensetmandelbrotaxis(res, iter, center.real, zoom, cols))
+    if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
+        return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
-            num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(2/zoom)+center.imag)
+            num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
             numS = func(0, num, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
@@ -60,15 +93,15 @@ def gensetmain(res, iter, center, zoom, cols, func):
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def gensetmandelbrotaxis(res, iter, center, zoom, cols):
+def gensetmainaxis(res, iter, center, zoom, cols, func):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
-                num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(2/zoom))
-                numS = iterman(0, num, iter)
+                num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
+                numS = func(0, num, iter)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
@@ -87,7 +120,7 @@ def gensetjulia(res, iter, center, zoom, cols, func):
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
-            num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(2/zoom)+center2.imag)
+            num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
             numS = func(num, center, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
@@ -98,8 +131,16 @@ def gensetjulia(res, iter, center, zoom, cols, func):
 def getfunction(fractal):
     if(fractal == "Mandelbrot Set"):
         return(iterman)
+    elif(fractal == "Cubic Mandelbrot"):
+        return(itercubic)
     elif(fractal == "Burning Ship"):
         return(itership)
+    elif(fractal == "Celtic Fractal"):
+        return(iterceltic)
+    elif(fractal == "Buffalo Fractal"):
+        return(iterbuffalo)
+    elif(fractal == "Mandelbar Tricorn"):
+        return(itertricorn)
 
 def reloadmain():
     func = getfunction(fractal)
@@ -160,7 +201,7 @@ class user(pygame.sprite.Sprite):
     def get_parameters(self, res, center, zoom, pos):
         halfres = res/2-0.5
         mx, my = pos
-        newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(2/zoom)+center.imag)
+        newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(-2/zoom)+center.imag)
         if(axismode):
             newcenter = complex(newcenter.real, 0)
         newzoom = zoom * res/self.size
@@ -375,7 +416,7 @@ class buttontoggleaxismode(button):
                 self.changetext("Axis Mode Locked Off")
 
 screen = pygame.display.set_mode((1000, 700))
-pygame.display.set_caption("Mandelbrot Explorer")
+pygame.display.set_caption("Fractal Explorer")
 
 clock = pygame.time.Clock()
 
@@ -394,7 +435,7 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
-fractals = ["Mandelbrot Set", "Burning Ship"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn"]
 fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")

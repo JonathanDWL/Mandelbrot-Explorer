@@ -77,6 +77,18 @@ def itertricorn(z, c, iterate):
             return(i)
     return(-1)
 
+def iterburningbrot(z, c, iterate):
+    z = complex(z.real, -z.imag)
+    c = complex(c.real, -c.imag)
+    for i in range(iterate):
+        if(i % 2 == 0):
+            z = complex(abs(z.real), abs(z.imag))**2 + c
+        else:
+            z = z**2 + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
 def gensetmain(res, iter, center, zoom, cols, func):
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
@@ -141,6 +153,8 @@ def getfunction(fractal):
         return(iterbuffalo)
     elif(fractal == "Mandelbar Tricorn"):
         return(itertricorn)
+    elif(fractal == "Burningbrot"):
+        return(iterburningbrot)
 
 def reloadmain():
     func = getfunction(fractal)
@@ -435,7 +449,7 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
-fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot"]
 fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")

@@ -43,6 +43,20 @@ def itercubic(z, c, iterate):
             return(i)
     return(-1)
 
+def iterquartic(z, c, iterate):
+    for i in range(iterate):
+        z = z**4 + c
+        if(abs(z) > 2**(1/3)):
+            return(i)
+    return(-1)
+
+def iterquintic(z, c, iterate):
+    for i in range(iterate):
+        z = z**5 + c
+        if(abs(z) > 2**(1/4)):
+            return(i)
+    return(-1)
+
 def itership(z, c, iterate):
     z = complex(z.real, -z.imag)
     c = complex(c.real, -c.imag)
@@ -101,8 +115,18 @@ def itermandelship(z, c, iterate):
             return(i)
     return(-1)
 
+def itermandelcorn(z, c, iterate):
+    for i in range(iterate):
+        if(i % 2 == 0):
+            z = z**2 + c
+        else:
+            z = complex(z.real, -z.imag)**2 + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
 def gensetmain(res, iter, center, zoom, cols, func):
-    if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
+    if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
@@ -157,6 +181,10 @@ def getfunction(fractal):
         return(iterman)
     elif(fractal == "Cubic Mandelbrot"):
         return(itercubic)
+    elif(fractal == "Quartic Mandelbrot"):
+        return(iterquartic)
+    elif(fractal == "Quintic Mandelbrot"):
+        return(iterquintic)
     elif(fractal == "Burning Ship"):
         return(itership)
     elif(fractal == "Celtic Fractal"):
@@ -169,6 +197,8 @@ def getfunction(fractal):
         return(iterburningbrot)
     elif(fractal == "Mandelship Hybrid"):
         return(itermandelship)
+    elif(fractal == "Mandelcorn Hybrid"):
+        return(itermandelcorn)
 
 def reloadmain():
     func = getfunction(fractal)
@@ -463,7 +493,7 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
-fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid", "Mandelcorn Hybrid"]
 fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")

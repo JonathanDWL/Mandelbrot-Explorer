@@ -39,7 +39,7 @@ def iterman(z, c, iterate):
 def itercubic(z, c, iterate):
     for i in range(iterate):
         z = z**3 + c
-        if(abs(z) > 2):
+        if(abs(z) > 2**(1/2)):
             return(i)
     return(-1)
 
@@ -85,6 +85,18 @@ def iterburningbrot(z, c, iterate):
             z = complex(abs(z.real), abs(z.imag))**2 + c
         else:
             z = z**2 + c
+        if(abs(z) > 2):
+            return(i)
+    return(-1)
+
+def itermandelship(z, c, iterate):
+    z = complex(z.real, -z.imag)
+    c = complex(c.real, -c.imag)
+    for i in range(iterate):
+        if(i % 2 == 0):
+            z = z**2 + c
+        else:
+            z = complex(abs(z.real), abs(z.imag))**2 + c
         if(abs(z) > 2):
             return(i)
     return(-1)
@@ -153,8 +165,10 @@ def getfunction(fractal):
         return(iterbuffalo)
     elif(fractal == "Mandelbar Tricorn"):
         return(itertricorn)
-    elif(fractal == "Burningbrot"):
+    elif(fractal == "Burningbrot Hybrid"):
         return(iterburningbrot)
+    elif(fractal == "Mandelship Hybrid"):
+        return(itermandelship)
 
 def reloadmain():
     func = getfunction(fractal)
@@ -449,7 +463,7 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
-fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")

@@ -132,7 +132,7 @@ def gensetmain(res, iter, center, zoom, cols, func):
                 pixels[x,y] = (0, 0, 0)
             else:
                 if(smoothcoloring):
-                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
                 else:
                     pixels[x,y] = cols[int(numS)%len(cols)]
     return(canvas)
@@ -150,7 +150,7 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
                     pixels[x,y] = (0, 0, 0)
                 else:
                     if(smoothcoloring):
-                        pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                        pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
                     else:
                         pixels[x,y] = cols[int(numS)%len(cols)]
             else:
@@ -173,7 +173,7 @@ def gensetjulia(res, iter, center, zoom, cols, func):
                 pixels[x,y] = (0, 0, 0)
             else:
                 if(smoothcoloring):
-                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
                 else:
                     pixels[x,y] = cols[int(numS)%len(cols)]
     return(canvas)

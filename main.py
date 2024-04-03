@@ -131,7 +131,10 @@ def gensetmain(res, iter, center, zoom, cols, func):
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
-                pixels[x,y] = cols[numS%len(cols)]
+                if(smoothcoloring):
+                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                else:
+                    pixels[x,y] = cols[int(numS)%len(cols)]
     return(canvas)
 
 def gensetmainaxis(res, iter, center, zoom, cols, func):
@@ -146,7 +149,10 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
-                    pixels[x,y] = cols[numS%len(cols)]
+                    if(smoothcoloring):
+                        pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                    else:
+                        pixels[x,y] = cols[int(numS)%len(cols)]
             else:
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
@@ -166,7 +172,10 @@ def gensetjulia(res, iter, center, zoom, cols, func):
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
-                pixels[x,y] = cols[numS%len(cols)]
+                if(smoothcoloring):
+                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-numS)
+                else:
+                    pixels[x,y] = cols[int(numS)%len(cols)]
     return(canvas)
 
 def getfunction(fractal):
@@ -464,6 +473,19 @@ class buttontoggleaxismode(button):
         if(center.imag != 0 and not axismode):
                 self.changetext("Axis Mode Locked Off")
 
+class buttontogglesmoothcoloring(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttontogglesmoothcoloring, self).__init__(x, y, width, height, text)
+
+    def function(self):
+        global smoothcoloring
+        if(not smoothcoloring):
+            smoothcoloring = True
+            self.changetext("Disable Smooth Coloring")
+        elif(smoothcoloring):
+            smoothcoloring = False
+            self.changetext("Enable Smooth Coloring")
+
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Fractal Explorer")
 
@@ -486,6 +508,7 @@ juliazoom = 1
 axismode = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
+smoothcoloring = False
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -507,6 +530,7 @@ fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
 buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
 buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
 buttons.add(buttontoggleaxismode(700, 420, 300, 70, "Enable Axis Mode"))
+buttons.add(buttontogglesmoothcoloring(700, 490, 300, 70, "Enable Smooth Coloring"))
 
 running = True
 while running:

@@ -17,23 +17,26 @@ pygame.init()
 def lerp(a, b, amount):
     return(a+amount*(b-a))
 
+def lerpcolor(color1, color2, amount):
+    R = int(lerp(color1[0], color2[0], amount))
+    G = int(lerp(color1[1], color2[1], amount))
+    B = int(lerp(color1[2], color2[2], amount))
+    return((R, G, B))
+
 def gradient(colors, steps):
     list = []
     colors.append("White")
     for i in range(steps):
         interp = i/steps*(len(colors)-2)
         index = int(interp)
-        R = int(lerp(colors[index][0], colors[index+1][0], interp-index))
-        G = int(lerp(colors[index][1], colors[index+1][1], interp-index))
-        B = int(lerp(colors[index][2], colors[index+1][2], interp-index))
-        list.append((R, G, B))
+        list.append(lerpcolor(colors[index], colors[index+1], interp-index))
     return(list)
 
 def iterman(z, c, iterate):
     for i in range(iterate):
         z = z**2 + c
         if(abs(z) > 2):
-            return(i)
+            return(i - (abs(z)-2)/4)
     return(-1)
 
 def itercubic(z, c, iterate):
@@ -115,16 +118,6 @@ def itermandelship(z, c, iterate):
             return(i)
     return(-1)
 
-def itermandelcorn(z, c, iterate):
-    for i in range(iterate):
-        if(i % 2 == 0):
-            z = z**2 + c
-        else:
-            z = complex(z.real, -z.imag)**2 + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
-
 def gensetmain(res, iter, center, zoom, cols, func):
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
@@ -197,8 +190,6 @@ def getfunction(fractal):
         return(iterburningbrot)
     elif(fractal == "Mandelship Hybrid"):
         return(itermandelship)
-    elif(fractal == "Mandelcorn Hybrid"):
-        return(itermandelcorn)
 
 def reloadmain():
     func = getfunction(fractal)
@@ -493,7 +484,7 @@ zoomjulia = False
 focusjulia = False
 juliazoom = 1
 axismode = False
-fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid", "Mandelcorn Hybrid"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
 
 Image.open("defaultset.png").save("set.png")

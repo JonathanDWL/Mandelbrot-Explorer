@@ -17,6 +17,11 @@ pygame.init()
 def lerp(a, b, amount):
     return(a+amount*(b-a))
 
+def invlerp(n, a, b):
+    if(b == a):
+        return(1)
+    return((n-a)/(b-a))
+
 def lerpcolor(color1, color2, amount):
     R = int(lerp(color1[0], color2[0], amount))
     G = int(lerp(color1[1], color2[1], amount))
@@ -36,8 +41,8 @@ def iterman(z, c, iterate):
     for i in range(iterate):
         z = z**2 + c
         if(abs(z) > 2):
-            return(i - (abs(z)-2)/4)
-    return(-1)
+            return(i, abs(z))
+    return(-1, abs(z))
 
 def itercubic(z, c, iterate):
     for i in range(iterate):
@@ -119,6 +124,11 @@ def itermandelship(z, c, iterate):
     return(-1)
 
 def gensetmain(res, iter, center, zoom, cols, func):
+    if(smoothcoloring):
+        maxreach = [-1 for _ in range(iter)]
+        minreach = [999 for _ in range(iter)]
+        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
+        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
@@ -127,17 +137,31 @@ def gensetmain(res, iter, center, zoom, cols, func):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
-            numS = func(0, num, iter)
+            numS, reach = func(0, num, iter)
+            if(smoothcoloring):
+                if(reach > maxreach[numS]):
+                    maxreach[numS] = reach
+                elif(reach < minreach[numS]):
+                    minreach[numS] = reach
+                numSlist[x][y] = numS
+                reachlist[x][y] = reach
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
-                if(smoothcoloring):
-                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
-                else:
-                    pixels[x,y] = cols[int(numS)%len(cols)]
+                pixels[x,y] = cols[numS%len(cols)]
+    if(smoothcoloring):
+        for x in range(res):
+            for y in range(res):
+                if(numSlist[x][y] != -1):
+                    pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
     return(canvas)
 
 def gensetmainaxis(res, iter, center, zoom, cols, func):
+    if(smoothcoloring):
+        maxreach = [-1 for _ in range(iter)]
+        minreach = [999 for _ in range(iter)]
+        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
+        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -145,19 +169,36 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
                 num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
-                numS = func(0, num, iter)
+                numS, reach = func(0, num, iter)
+                if(smoothcoloring):
+                    if(reach > maxreach[numS]):
+                        maxreach[numS] = reach
+                    elif(reach < minreach[numS]):
+                        minreach[numS] = reach
+                    numSlist[x][y] = numS
+                    reachlist[x][y] = reach
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
-                    if(smoothcoloring):
-                        pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
-                    else:
-                        pixels[x,y] = cols[int(numS)%len(cols)]
+                    pixels[x,y] = cols[numS%len(cols)]
             else:
                 pixels[x,y] = pixels[x,-1-y]
+    if(smoothcoloring):
+        for x in range(res):
+            for y in range(res):
+                if(y <= -(-res//2)-1):
+                    if(numSlist[x][y] != -1):
+                        pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
+                else:
+                    pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
 def gensetjulia(res, iter, center, zoom, cols, func):
+    if(smoothcoloring):
+        maxreach = [-1 for _ in range(iter)]
+        minreach = [999 for _ in range(iter)]
+        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
+        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     if(zoom != 1):
         center2 = center
     else:
@@ -168,14 +209,23 @@ def gensetjulia(res, iter, center, zoom, cols, func):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
-            numS = func(num, center, iter)
+            numS, reach = func(num, center, iter)
+            if(smoothcoloring):
+                if(reach > maxreach[numS]):
+                    maxreach[numS] = reach
+                elif(reach < minreach[numS]):
+                    minreach[numS] = reach
+                numSlist[x][y] = numS
+                reachlist[x][y] = reach
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
-                if(smoothcoloring):
-                    pixels[x,y] = lerpcolor(cols[int(numS)%len(cols)], cols[int(numS+1)%len(cols)], numS-int(numS))
-                else:
-                    pixels[x,y] = cols[int(numS)%len(cols)]
+                pixels[x,y] = cols[numS%len(cols)]
+    if(smoothcoloring):
+        for x in range(res):
+            for y in range(res):
+                if(numSlist[x][y] != -1):
+                    pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
     return(canvas)
 
 def getfunction(fractal):

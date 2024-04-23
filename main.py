@@ -489,18 +489,18 @@ class buttontoggleaxismode(button):
         if(center.imag != 0 and not axismode):
                 self.changetext("Axis Mode Locked Off")
 
-class buttontoggleshowinfo(button):
+class buttontoggleviewmode(button):
     def __init__(self, x, y, width, height, text):
-        super(buttontoggleshowinfo, self).__init__(x, y, width, height, text)
+        super(buttontoggleviewmode, self).__init__(x, y, width, height, text)
 
     def function(self):
-        global showinfo
-        if(not showinfo):
-            showinfo = True
-            self.changetext("Hide Information")
-        elif(showinfo):
-            showinfo = False
-            self.changetext("Show Information")
+        global viewmode
+        if(not viewmode):
+            viewmode = True
+            self.changetext("Disable View Mode")
+        elif(viewmode):
+            viewmode = False
+            self.changetext("Enable View Mode")
 
 class infodisplay(pygame.sprite.Sprite):
     def __init__(self):
@@ -512,6 +512,8 @@ class infodisplay(pygame.sprite.Sprite):
         self.center = textdisplay2(10, 35, 25, "Center: "+str(center.real)+" + "+str(center.imag)+"i")
         self.zoom = textdisplay2(10, 60, 25, "Zoom: "+str(zoom))
         self.iter = textdisplay2(10, 85, 25, "Iteration: "+str(iteration))
+        self.newcenter = textdisplay2(10, 110, 25, "Projected Center: "+str(center.real)+" + "+str(center.imag)+"i")
+        self.newzoom = textdisplay2(10, 135, 25, "Projected Zoom: "+str(zoom))
 
     def draw(self):
         self.image.fill((0, 0, 0, 0))
@@ -519,6 +521,8 @@ class infodisplay(pygame.sprite.Sprite):
         self.image.blit(self.frac.returninfo()[0], self.frac.returninfo()[1])
         self.image.blit(self.zoom.returninfo()[0], self.zoom.returninfo()[1])
         self.image.blit(self.iter.returninfo()[0], self.iter.returninfo()[1])
+        self.image.blit(self.newcenter.returninfo()[0], self.newcenter.returninfo()[1])
+        self.image.blit(self.newzoom.returninfo()[0], self.newzoom.returninfo()[1])
 
     def updateclick(self):
         self.frac.changetext("Fractal: "+fractal)
@@ -527,7 +531,16 @@ class infodisplay(pygame.sprite.Sprite):
         self.iter.changetext("Iteration: "+str(iteration))
 
     def updatestep(self):
-        pass
+        try:
+            newcenter, newzoom = user.get_parameters(700, center, zoom, mousepos)
+            if(mousepos[0] >= 699):
+                newzoom = 1/0
+            self.newcenter.changetext("Projected Center: "+str(newcenter.real)+" + "+str(newcenter.imag)+"i")
+            self.newzoom.changetext("Projected Zoom: "+str(newzoom))
+        except:
+            self.newcenter.changetext("Projected Center: "+"ERROR")
+            self.newzoom.changetext("Projected Zoom: "+"ERROR")
+
 
 
 screen = pygame.display.set_mode((1000, 700))
@@ -552,7 +565,7 @@ juliazoom = 1
 axismode = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
-showinfo = False
+viewmode = False
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -574,7 +587,7 @@ fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
 buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
 buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
 buttons.add(buttontoggleaxismode(700, 420, 300, 70, "Enable Axis Mode"))
-buttons.add(buttontoggleshowinfo(700, 490, 300, 70, "Show Information"))
+buttons.add(buttontoggleviewmode(700, 490, 300, 70, "Enable View Mode"))
 info = infodisplay()
 
 running = True
@@ -591,7 +604,7 @@ while running:
     mousepos = pygame.mouse.get_pos()
     if(mousepos[0] <= 0 or mousepos[0] >= 999 or mousepos[1] <= 0 or mousepos[1] >= 999):
         mousepos = None
-    if(mousepos != None and mousepos[0] < 699 and focusjulia == False):
+    if(mousepos != None and mousepos[0] < 699 and focusjulia == False and viewmode == False):
         user.move(mousepos)
         user.scale(wheelscroll)
         if(pygame.mouse.get_pressed()[0]):
@@ -603,7 +616,7 @@ while running:
             info.updateclick()
 
     screen.blit(display.image, display.rect.topleft)
-    if(focusjulia == False):
+    if(focusjulia == False and viewmode == False):
         screen.blit(user.image, user.rect.topleft)
     screen.blit(dashboard.image, dashboard.rect.topleft)
     screen.blit(display2.image, display2.rect.topleft)
@@ -614,7 +627,7 @@ while running:
     screen.blit(fractalnamedisplay.image, fractalnamedisplay.rect.topleft)
     fractalnamedisplay.draw()
     buttons.draw(screen)
-    if(showinfo):
+    if(not viewmode):
         screen.blit(info.image, info.rect.topleft)
         info.draw()
         info.updatestep()

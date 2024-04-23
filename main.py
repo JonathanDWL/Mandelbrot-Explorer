@@ -41,8 +41,8 @@ def iterman(z, c, iterate):
     for i in range(iterate):
         z = z**2 + c
         if(abs(z) > 2):
-            return(i, abs(z))
-    return(-1, abs(z))
+            return(i)
+    return(-1)
 
 def itercubic(z, c, iterate):
     for i in range(iterate):
@@ -124,11 +124,6 @@ def itermandelship(z, c, iterate):
     return(-1)
 
 def gensetmain(res, iter, center, zoom, cols, func):
-    if(smoothcoloring):
-        maxreach = [-1 for _ in range(iter)]
-        minreach = [999 for _ in range(iter)]
-        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
-        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
@@ -137,31 +132,14 @@ def gensetmain(res, iter, center, zoom, cols, func):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
-            numS, reach = func(0, num, iter)
-            if(smoothcoloring):
-                if(reach > maxreach[numS]):
-                    maxreach[numS] = reach
-                elif(reach < minreach[numS]):
-                    minreach[numS] = reach
-                numSlist[x][y] = numS
-                reachlist[x][y] = reach
+            numS = func(0, num, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
-    if(smoothcoloring):
-        for x in range(res):
-            for y in range(res):
-                if(numSlist[x][y] != -1):
-                    pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
     return(canvas)
 
 def gensetmainaxis(res, iter, center, zoom, cols, func):
-    if(smoothcoloring):
-        maxreach = [-1 for _ in range(iter)]
-        minreach = [999 for _ in range(iter)]
-        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
-        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -169,36 +147,16 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
                 num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
-                numS, reach = func(0, num, iter)
-                if(smoothcoloring):
-                    if(reach > maxreach[numS]):
-                        maxreach[numS] = reach
-                    elif(reach < minreach[numS]):
-                        minreach[numS] = reach
-                    numSlist[x][y] = numS
-                    reachlist[x][y] = reach
+                numS = func(0, num, iter)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
                     pixels[x,y] = cols[numS%len(cols)]
             else:
                 pixels[x,y] = pixels[x,-1-y]
-    if(smoothcoloring):
-        for x in range(res):
-            for y in range(res):
-                if(y <= -(-res//2)-1):
-                    if(numSlist[x][y] != -1):
-                        pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
-                else:
-                    pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
 def gensetjulia(res, iter, center, zoom, cols, func):
-    if(smoothcoloring):
-        maxreach = [-1 for _ in range(iter)]
-        minreach = [999 for _ in range(iter)]
-        numSlist = [[-1 for _ in range(res)] for _ in range(res)]
-        reachlist = [[-1 for _ in range(res)] for _ in range(res)]
     if(zoom != 1):
         center2 = center
     else:
@@ -209,23 +167,11 @@ def gensetjulia(res, iter, center, zoom, cols, func):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
-            numS, reach = func(num, center, iter)
-            if(smoothcoloring):
-                if(reach > maxreach[numS]):
-                    maxreach[numS] = reach
-                elif(reach < minreach[numS]):
-                    minreach[numS] = reach
-                numSlist[x][y] = numS
-                reachlist[x][y] = reach
+            numS = func(num, center, iter)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
-    if(smoothcoloring):
-        for x in range(res):
-            for y in range(res):
-                if(numSlist[x][y] != -1):
-                    pixels[x,y] = lerpcolor(cols[(numSlist[x][y])%len(cols)], cols[(numSlist[x][y]-1)%len(cols)], invlerp(reachlist[x][y], minreach[numSlist[x][y]], maxreach[numSlist[x][y]]))
     return(canvas)
 
 def getfunction(fractal):
@@ -346,6 +292,26 @@ class textdisplay(pygame.sprite.Sprite):
         self.text = text
         self.textrendered = self.font.render(self.text, False, "WHITE")
         self.textrect = self.textrendered.get_rect(center = (self.width//2, self.height//2))
+    
+class textdisplay2(pygame.sprite.Sprite):
+    def __init__(self, x, y, size, text):
+        super(textdisplay2, self).__init__()
+        self.x = x
+        self.y = y
+        self.size = size
+        self.font = pygame.font.Font(None, size)
+        self.text = text
+        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textrect = self.textrendered.get_rect(topleft = (self.x, self.y))
+
+    def changetext(self, text):
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textrect = self.textrendered.get_rect(topleft = (self.x, self.y))
+
+    def returninfo(self):
+        return(self.textrendered, self.textrect)
 
 class button(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, text):
@@ -523,18 +489,46 @@ class buttontoggleaxismode(button):
         if(center.imag != 0 and not axismode):
                 self.changetext("Axis Mode Locked Off")
 
-class buttontogglesmoothcoloring(button):
+class buttontoggleshowinfo(button):
     def __init__(self, x, y, width, height, text):
-        super(buttontogglesmoothcoloring, self).__init__(x, y, width, height, text)
+        super(buttontoggleshowinfo, self).__init__(x, y, width, height, text)
 
     def function(self):
-        global smoothcoloring
-        if(not smoothcoloring):
-            smoothcoloring = True
-            self.changetext("Disable Smooth Coloring")
-        elif(smoothcoloring):
-            smoothcoloring = False
-            self.changetext("Enable Smooth Coloring")
+        global showinfo
+        if(not showinfo):
+            showinfo = True
+            self.changetext("Hide Information")
+        elif(showinfo):
+            showinfo = False
+            self.changetext("Show Information")
+
+class infodisplay(pygame.sprite.Sprite):
+    def __init__(self):
+        super(infodisplay, self).__init__()
+        self.image = pygame.Surface((700, 700), pygame.SRCALPHA, 32)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect(topleft = (0, 0))
+        self.frac = textdisplay2(10, 10, 25, "Fractal: "+fractal)
+        self.center = textdisplay2(10, 35, 25, "Center: "+str(center.real)+" + "+str(center.imag)+"i")
+        self.zoom = textdisplay2(10, 60, 25, "Zoom: "+str(zoom))
+        self.iter = textdisplay2(10, 85, 25, "Iteration: "+str(iteration))
+
+    def draw(self):
+        self.image.fill((0, 0, 0, 0))
+        self.image.blit(self.center.returninfo()[0], self.center.returninfo()[1])
+        self.image.blit(self.frac.returninfo()[0], self.frac.returninfo()[1])
+        self.image.blit(self.zoom.returninfo()[0], self.zoom.returninfo()[1])
+        self.image.blit(self.iter.returninfo()[0], self.iter.returninfo()[1])
+
+    def updateclick(self):
+        self.frac.changetext("Fractal: "+fractal)
+        self.center.changetext("Center: "+str(center.real)+" + "+str(center.imag)+"i")
+        self.zoom.changetext("Zoom: "+str(zoom))
+        self.iter.changetext("Iteration: "+str(iteration))
+
+    def updatestep(self):
+        pass
+
 
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Fractal Explorer")
@@ -558,7 +552,7 @@ juliazoom = 1
 axismode = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
-smoothcoloring = False
+showinfo = False
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -580,7 +574,8 @@ fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
 buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
 buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
 buttons.add(buttontoggleaxismode(700, 420, 300, 70, "Enable Axis Mode"))
-buttons.add(buttontogglesmoothcoloring(700, 490, 300, 70, "Enable Smooth Coloring"))
+buttons.add(buttontoggleshowinfo(700, 490, 300, 70, "Show Information"))
+info = infodisplay()
 
 running = True
 while running:
@@ -605,6 +600,7 @@ while running:
                 juliazoom = zoom
             reloadmain()
             reloadjulia()
+            info.updateclick()
 
     screen.blit(display.image, display.rect.topleft)
     if(focusjulia == False):
@@ -618,6 +614,10 @@ while running:
     screen.blit(fractalnamedisplay.image, fractalnamedisplay.rect.topleft)
     fractalnamedisplay.draw()
     buttons.draw(screen)
+    if(showinfo):
+        screen.blit(info.image, info.rect.topleft)
+        info.draw()
+        info.updatestep()
     for button in buttons:
         if(mousepos != None):
             colliding = button.collision(mousepos)

@@ -406,6 +406,7 @@ class buttonreloadall(button):
     def function(self):
         reloadmain()
         reloadjulia()
+        info.updateclick()
 
 class buttonchangeiter(button):
     def __init__(self, x, y, width, height, text, amount):
@@ -538,8 +539,7 @@ class infodisplay(pygame.sprite.Sprite):
             self.newcenter.changetext("Projected Center: "+str(newcenter.real)+" + "+str(newcenter.imag)+"i")
             self.newzoom.changetext("Projected Zoom: "+str(newzoom))
         except:
-            self.newcenter.changetext("Projected Center: "+"ERROR")
-            self.newzoom.changetext("Projected Zoom: "+"ERROR")
+            pass
 
 
 

@@ -229,8 +229,9 @@ class user(pygame.sprite.Sprite):
     def __init__(self):
         super(user, self).__init__()
         self.size = 350
-        self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, "WHITE", (0, 0, self.size, self.size), 2)
+        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
+        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
         self.rect = self.image.get_rect(center = (9999, 9999))
 
     def move(self, pos):
@@ -248,8 +249,9 @@ class user(pygame.sprite.Sprite):
             self.size = 35
         elif(self.size > 650):
             self.size = 650
-        self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, "WHITE", (0, 0, self.size, self.size), 2)
+        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
+        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
         self.rect = self.image.get_rect(center = self.rect.center)
 
     def get_parameters(self, res, center, zoom, pos):
@@ -299,15 +301,25 @@ class textdisplay2(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.size = size
-        self.font = pygame.font.Font(None, size)
+        self.font = pygame.font.Font(None, self.size)
         self.text = text
-        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textprerendered = self.font.render(self.text, False, "WHITE")
+        self.excess = self.size - self.textprerendered.get_size()[1]
+        self.textrendered = pygame.Surface((self.textprerendered.get_size()[0]+self.excess, self.size), pygame.SRCALPHA, 32)
+        self.textrendered.convert_alpha()
+        self.textrendered.fill((0, 0, 0, 64))
+        self.textrendered.blit(self.textprerendered, (self.excess/2, self.excess/2))
         self.textrect = self.textrendered.get_rect(topleft = (self.x, self.y))
 
     def changetext(self, text):
         self.font = pygame.font.Font(None, self.size)
         self.text = text
-        self.textrendered = self.font.render(self.text, False, "WHITE")
+        self.textprerendered = self.font.render(self.text, False, "WHITE")
+        self.excess = self.size - self.textprerendered.get_size()[1]
+        self.textrendered = pygame.Surface((self.textprerendered.get_size()[0]+self.excess, self.size), pygame.SRCALPHA, 32)
+        self.textrendered.convert_alpha()
+        self.textrendered.fill((0, 0, 0, 64))
+        self.textrendered.blit(self.textprerendered, (self.excess/2, self.excess/2))
         self.textrect = self.textrendered.get_rect(topleft = (self.x, self.y))
 
     def returninfo(self):
@@ -534,7 +546,7 @@ class infodisplay(pygame.sprite.Sprite):
     def updatestep(self):
         try:
             newcenter, newzoom = user.get_parameters(700, center, zoom, mousepos)
-            if(mousepos[0] >= 699):
+            if(mousepos[0] >= 699 or focusjulia):
                 newzoom = 1/0
             self.newcenter.changetext("Projected Center: "+str(newcenter.real)+" + "+str(newcenter.imag)+"i")
             self.newzoom.changetext("Projected Zoom: "+str(newzoom))
@@ -545,6 +557,8 @@ class infodisplay(pygame.sprite.Sprite):
 
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Fractal Explorer")
+icon = pygame.image.load("icon.png")
+pygame.display.set_icon(icon)
 
 clock = pygame.time.Clock()
 

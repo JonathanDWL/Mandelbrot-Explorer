@@ -237,8 +237,11 @@ class user(pygame.sprite.Sprite):
     def move(self, pos):
         if(pos != None):
             mx, my = pos
-            self.rect.centerx = mx
-            if(not axismode):
+            if(not reallock):
+                self.rect.centerx = mx
+            else:
+                self.rect.centerx = 350
+            if(not imaglock):
                 self.rect.centery = my
             else:
                 self.rect.centery = 350
@@ -258,8 +261,10 @@ class user(pygame.sprite.Sprite):
         halfres = res/2-0.5
         mx, my = pos
         newcenter = complex((mx-halfres)/halfres*(2/zoom)+center.real, (my-halfres)/halfres*(-2/zoom)+center.imag)
-        if(axismode):
-            newcenter = complex(newcenter.real, 0)
+        if(reallock):
+            newcenter = complex(center.real, newcenter.imag)
+        if(imaglock):
+            newcenter = complex(newcenter.real, center.imag)
         newzoom = zoom * res/self.size
         return(newcenter, newzoom)
     
@@ -321,6 +326,36 @@ class textdisplay2(pygame.sprite.Sprite):
         self.textrendered.fill((0, 0, 0, 64))
         self.textrendered.blit(self.textprerendered, (self.excess/2, self.excess/2))
         self.textrect = self.textrendered.get_rect(topleft = (self.x, self.y))
+
+    def returninfo(self):
+        return(self.textrendered, self.textrect)
+
+class textdisplay3(pygame.sprite.Sprite):
+    def __init__(self, x, y, size, text):
+        super(textdisplay3, self).__init__()
+        self.x = x
+        self.y = y
+        self.size = size
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textprerendered = self.font.render(self.text, False, "WHITE")
+        self.excess = self.size - self.textprerendered.get_size()[1]
+        self.textrendered = pygame.Surface((self.textprerendered.get_size()[0]+self.excess, self.size), pygame.SRCALPHA, 32)
+        self.textrendered.convert_alpha()
+        self.textrendered.fill((0, 0, 0, 192))
+        self.textrendered.blit(self.textprerendered, (self.excess/2, self.excess/2))
+        self.textrect = self.textrendered.get_rect(center = (self.x, self.y))
+
+    def changetext(self, text):
+        self.font = pygame.font.Font(None, self.size)
+        self.text = text
+        self.textprerendered = self.font.render(self.text, False, "WHITE")
+        self.excess = self.size - self.textprerendered.get_size()[1]
+        self.textrendered = pygame.Surface((self.textprerendered.get_size()[0]+self.excess, self.size), pygame.SRCALPHA, 32)
+        self.textrendered.convert_alpha()
+        self.textrendered.fill((0, 0, 0, 192))
+        self.textrendered.blit(self.textprerendered, (self.excess/2, self.excess/2))
+        self.textrect = self.textrendered.get_rect(center = (self.x, self.y))
 
     def returninfo(self):
         return(self.textrendered, self.textrect)
@@ -411,6 +446,12 @@ class buttonzoomjulia(button):
             self.changetext("Zoom Julia")
         reloadjulia()
 
+    def update(self):
+        if(zoomjulia):
+            self.changetext("Unzoom Julia")
+        else:
+            self.changetext("Zoom Julia")
+
 class buttonreloadall(button):
     def __init__(self, x, y, width, height, text):
         super(buttonreloadall, self).__init__(x, y, width, height, text)
@@ -485,22 +526,43 @@ class buttonchangefractal(button):
         fractal = fractals[(fractals.index(fractal)+self.amount)%len(fractals)]
         fractalnamedisplay.changetext(fractal)
 
-class buttontoggleaxismode(button):
+class buttontogglereallock(button):
     def __init__(self, x, y, width, height, text):
-        super(buttontoggleaxismode, self).__init__(x, y, width, height, text)
+        super(buttontogglereallock, self).__init__(x, y, width, height, text)
 
     def function(self):
-        global axismode
-        if(center.imag == 0 and not axismode):
-            axismode = True
-            self.changetext("Disable Axis Mode")
-        elif(axismode):
-            axismode = False
-            self.changetext("Enable Axis Mode")
+        global reallock
+        if(not reallock):
+            reallock = True
+            self.changetext("Unlock Real")
+        else:
+            reallock = False
+            self.changetext("Lock Real")
+    
+    def update(self):
+        if(reallock):
+            self.changetext("Unlock Real")
+        else:
+            self.changetext("Lock Real")
+
+class buttontoggleimaglock(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttontoggleimaglock, self).__init__(x, y, width, height, text)
+
+    def function(self):
+        global imaglock
+        if(not imaglock):
+            imaglock = True
+            self.changetext("Unlock Imag")
+        else:
+            imaglock = False
+            self.changetext("Lock Imag")
 
     def update(self):
-        if(center.imag != 0 and not axismode):
-                self.changetext("Axis Mode Locked Off")
+        if(imaglock):
+            self.changetext("Unlock Imag")
+        else:
+            self.changetext("Lock Imag")
 
 class buttontoggleviewmode(button):
     def __init__(self, x, y, width, height, text):
@@ -553,7 +615,87 @@ class infodisplay(pygame.sprite.Sprite):
         except:
             pass
 
+class buttonsaveimage(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttonsaveimage, self).__init__(x, y, width, height, text)
 
+    def function(self):
+        screen.blit(checkconsole.returninfo()[0], checkconsole.returninfo()[1])
+        pygame.display.flip()
+        while(True):
+            dosave = input("Save an image? (Y/N): ").upper()
+            if(dosave == "Y"):
+                break
+            elif(dosave == "N"):
+                return()
+            else:
+                print("Invalid answer; try again.")
+        Image.open("set.png").save("savebuffer.png")
+        while(True):
+            rerender = input("Keep the image in its current resolution? (Y/N): ").upper()
+            if(rerender == "Y"):
+                rerenderbool = False
+                break
+            elif(rerender == "N"):
+                rerenderbool = True
+                break
+            else:
+                print("Invalid answer; try again.")
+        res = 700
+        if(rerenderbool):
+            while(True):
+                try:
+                    res = int(input("Enter new resolution (single integer): "))
+                    break
+                except:
+                    print("Invalid resolution; try again.")
+            func = getfunction(fractal)
+            print("Rendering...")
+            if(focusjulia == False):
+                gensetmain(res, iteration, center, zoom, scheme, func).save("savebuffer.png")
+            else:
+                gensetjulia(res, iteration, center, juliazoom, scheme, func).save("savebuffer.png")
+        name = input("Enter a name for the image file (do not include extension): ")
+        while(True):
+            try:
+                path = input("Enter a filepath for the image file (type 'prev' to use previous path): ")
+                if(path.lower() == "prev"):
+                    savepath = open("savepath.txt", "r")
+                    path = savepath.read()
+                    savepath.close()
+                else:
+                    savepath = open("savepath.txt", "w")
+                    savepath.write(path)
+                    savepath.close()
+                Image.open("savebuffer.png").save(path+"/"+name+".png")
+                print("Image saved at "+path+".")
+                break
+            except:
+                print("Invalid filepath; try again.")
+
+class buttonresetzoom(button):
+    def __init__(self, x, y, width, height, text):
+        super(buttonresetzoom, self).__init__(x, y, width, height, text)
+
+    def function(self):
+        global center
+        global zoom
+        global iteration
+        global zoomjulia
+        global juliazoom
+        global reallock
+        global imaglock
+        center = complex(0, 0)
+        zoom = 1
+        iteration = 300
+        zoomjulia = False
+        juliazoom = 1
+        reallock = False
+        imaglock = False
+        reloadmain()
+        reloadjulia()
+        iterdisplay.changetext("Iterate: "+str(iteration))
+        info.updateclick()
 
 screen = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("Fractal Explorer")
@@ -576,7 +718,8 @@ iteration = 300
 zoomjulia = False
 focusjulia = False
 juliazoom = 1
-axismode = False
+reallock = False
+imaglock = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
 viewmode = False
@@ -600,9 +743,13 @@ buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
 fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
 buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
 buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
-buttons.add(buttontoggleaxismode(700, 420, 300, 70, "Enable Axis Mode"))
+buttons.add(buttontogglereallock(700, 420, 150, 70, "Lock Real"))
+buttons.add(buttontoggleimaglock(850, 420, 150, 70, "Lock Imag"))
 buttons.add(buttontoggleviewmode(700, 490, 300, 70, "Enable View Mode"))
 info = infodisplay()
+buttons.add(buttonsaveimage(700, 560, 300, 70, "Save Image"))
+checkconsole = textdisplay3(500, 350, 100, "Check Console Window")
+buttons.add(buttonresetzoom(700, 630, 300, 70, "Reset Zoom"))
 
 running = True
 while running:

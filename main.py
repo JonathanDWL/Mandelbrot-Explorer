@@ -168,6 +168,7 @@ def gensetjulia(res, iter, center, zoom, cols, func):
         center2 = center
     else:
         center2 = 0
+        zoom = 1
     if(center2 == 0 and fractal in ["Burning Ship", "Buffalo Fractal", "Burningbrot Hybrid"]):
         return(gensetjuliacross(res, iter, center, zoom, cols, func))
     elif(center2 == 0 and fractal in ["Mandelbrot Set", "Quartic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn", "Mandelship Hybrid"]):

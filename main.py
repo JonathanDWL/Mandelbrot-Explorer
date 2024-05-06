@@ -9,18 +9,25 @@ Help with creating color schemes: https://mycolor.space/gradient
 '''
 
 import pygame
+import random
 import sys
 from PIL import Image
 
 pygame.init()
 
+def hextorgb(colors):
+    numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+    list = []
+    for i in range((len(colors) + 2)//9):
+        color = colors[9*i:9*i+7]
+        R = 16 * numbers.index(color[1].lower()) + numbers.index(color[2].lower())
+        G = 16 * numbers.index(color[3].lower()) + numbers.index(color[4].lower())
+        B = 16 * numbers.index(color[5].lower()) + numbers.index(color[6].lower())
+        list.append((R, G, B))
+    return(list)
+
 def lerp(a, b, amount):
     return(a+amount*(b-a))
-
-def invlerp(n, a, b):
-    if(b == a):
-        return(1)
-    return((n-a)/(b-a))
 
 def lerpcolor(color1, color2, amount):
     R = int(lerp(color1[0], color2[0], amount))
@@ -161,6 +168,10 @@ def gensetjulia(res, iter, center, zoom, cols, func):
         center2 = center
     else:
         center2 = 0
+    if(center2 == 0 and fractal in ["Burning Ship", "Buffalo Fractal", "Burningbrot Hybrid"]):
+        return(gensetjuliacross(res, iter, center, zoom, cols, func))
+    elif(center2 == 0 and fractal in ["Mandelbrot Set", "Quartic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn", "Mandelship Hybrid"]):
+        return(gensetjuliaorigin(res, iter, center, zoom, cols, func))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -172,6 +183,44 @@ def gensetjulia(res, iter, center, zoom, cols, func):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
+    return(canvas)
+
+def gensetjuliacross(res, iter, center, zoom, cols, func):
+    canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
+    pixels = canvas.load()
+    for x in range(res):
+        if(x <= -(-res//2)-1):
+            for y in range(res):
+                if(y <= -(-res//2)-1):
+                    halfres = res/2-0.5
+                    num = complex((x-halfres)/halfres*(2/zoom), (y-halfres)/halfres*(-2/zoom))
+                    numS = func(num, center, iter)
+                    if(numS < 0):
+                        pixels[x,y] = (0, 0, 0)
+                    else:
+                        pixels[x,y] = cols[numS%len(cols)]
+                else:
+                    pixels[x,y] = pixels[x,-1-y]
+        else:
+            for y in range(res):
+                pixels[x,y] = pixels[-1-x,y]
+    return(canvas)
+
+def gensetjuliaorigin(res, iter, center, zoom, cols, func):
+    canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
+    pixels = canvas.load()
+    for x in range(res):
+        for y in range(res):
+            if(x <= -(-res//2)-1):
+                halfres = res/2-0.5
+                num = complex((x-halfres)/halfres*(2/zoom), (y-halfres)/halfres*(-2/zoom))
+                numS = func(num, center, iter)
+                if(numS < 0):
+                    pixels[x,y] = (0, 0, 0)
+                else:
+                    pixels[x,y] = cols[numS%len(cols)]
+            else:
+                pixels[x,y] = pixels[-1-x,-1-y]
     return(canvas)
 
 def getfunction(fractal):
@@ -704,14 +753,19 @@ pygame.display.set_icon(icon)
 
 clock = pygame.time.Clock()
 
+"#321c1a, #532e26, #754330, #955b38, #b4763e, #c28947, #cf9c52, #dbb05d, #debd70, #e2ca83, #e6d698, #ebe2ac"
+"#ebe2ac, #d4d495, #bac781, #9fbb6e, #81ae5e, #6ba056, #55924f, #3f8448, #327243, #27603d, #1f4e36, #1a3d2d"
+
 schemes = [gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 80) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 80),
 gradient([(55, 5, 50), (120, 55, 72), (172, 115, 100), (215, 182, 146), (252, 252, 212)], 80) + gradient([(252, 252, 212), (215, 182, 146), (172, 115, 100), (120, 55, 72), (55, 5, 50)], 80),
 gradient([(48, 5, 56), (55, 48, 104), (45, 89, 148), (16, 131, 186), (0, 174, 215), (52, 196, 221), (93, 217, 224), (132, 238, 227), (165, 243, 223), (193, 247, 222), (217, 251, 227), (237, 255, 235)], 80) + gradient([(237, 255, 235), (225, 248, 208), (220, 240, 179), (220, 229, 147), (226, 217, 115), (228, 188, 90), (228, 159, 74), (224, 129, 66), (195, 83, 71), (153, 45, 74), (102, 18, 70), (48, 5, 56)], 80),
 gradient([(45, 7, 112), (0, 63, 153), (0, 102, 172), (0, 136, 176), (0, 168, 174), (63, 186, 172), (105, 202, 169), (145, 218, 165), (176, 226, 173), (203, 233, 186), (227, 241, 201), (246, 250, 220)], 80) + gradient([(246, 250, 220), (237, 224, 183), (233, 195, 151), (230, 165, 129), (224, 133, 117), (213, 108, 112), (198, 83, 112), (179, 60, 115), (154, 38, 114), (125, 19, 114), (91, 7, 114), (45, 7, 112)], 80),
 gradient([(247, 87, 129), (247, 177, 101)], 20) + gradient([(247, 177, 101), (242, 250, 130)], 20) + gradient([(242, 250, 130), (101, 247, 106)], 20) + gradient([(101, 247, 106), (101, 247, 242)], 20) + gradient([(101, 247, 242), (87, 98, 247)], 20) + gradient([(87, 98, 247), (233, 109, 247)], 20) + gradient([(233, 109, 247), (247, 87, 129)], 20),
-gradient([(102, 7, 75), (247, 87, 129)], 80) + gradient([(247, 87, 129), (102, 7, 7)], 80) + gradient([(102, 7, 7), (247, 177, 101)], 80) + gradient([(247, 177, 101), (102, 78, 7)], 80) + gradient([(102, 78, 7), (242, 250, 130)], 80) + gradient([(242, 250, 130), (43, 102, 7)], 80) + gradient([(43, 102, 7), (101, 247, 106)], 80) + gradient([(101, 247, 106), (50, 168, 117)], 80) + gradient([(50, 168, 117), (101, 247, 242)], 80) + gradient([(101, 247, 242), (7, 53, 102)], 80) + gradient([(7, 53, 102), (87, 98, 247)], 80) + gradient([(87, 98, 247), (53, 7, 102)], 80) + gradient([(53, 7, 102), (233, 109, 247)], 80) + gradient([(233, 109, 247), (102, 7, 75)], 80)]
+gradient([(102, 7, 75), (247, 87, 129)], 80) + gradient([(247, 87, 129), (102, 7, 7)], 80) + gradient([(102, 7, 7), (247, 177, 101)], 80) + gradient([(247, 177, 101), (102, 78, 7)], 80) + gradient([(102, 78, 7), (242, 250, 130)], 80) + gradient([(242, 250, 130), (43, 102, 7)], 80) + gradient([(43, 102, 7), (101, 247, 106)], 80) + gradient([(101, 247, 106), (50, 168, 117)], 80) + gradient([(50, 168, 117), (101, 247, 242)], 80) + gradient([(101, 247, 242), (7, 53, 102)], 80) + gradient([(7, 53, 102), (87, 98, 247)], 80) + gradient([(87, 98, 247), (53, 7, 102)], 80) + gradient([(53, 7, 102), (233, 109, 247)], 80) + gradient([(233, 109, 247), (102, 7, 75)], 80),
+gradient([(24, 19, 57), (33, 22, 63), (41, 24, 69), (51, 26, 74), (60, 28, 79), (90, 34, 88), (119, 40, 94), (148, 49, 96), (196, 75, 92), (230, 113, 81), (249, 160, 71), (249, 211, 74)], 80) + gradient([(249, 211, 74), (184, 194, 75), (128, 172, 84), (82, 148, 91), (48, 121, 92), (15, 105, 94), (0, 88, 90), (0, 71, 82), (0, 59, 81), (0, 47, 77), (4, 34, 70), (24, 19, 57)], 80),
+gradient([(91, 40, 102), (158, 69, 103), (202, 118, 104), (225, 174, 122), (233, 233, 167)], 80) + gradient([(233, 233, 167), (174, 196, 137), (119, 158, 112), (68, 121, 88), (12, 85, 66)], 80) + gradient([(12, 85, 66), (31, 115, 108), (62, 145, 152), (101, 175, 195), (146, 205, 236)], 80) + gradient([(146, 205, 236), (117, 165, 211), (102, 125, 182), (96, 83, 145), (91, 40, 102)], 80)]
 scheme = schemes[0]
-schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2"]
+schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Space Magic", "Sunrise"]
 center = complex(0, 0)
 zoom = 1
 iteration = 300

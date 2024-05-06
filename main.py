@@ -164,7 +164,7 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
     return(canvas)
 
 def gensetjulia(res, iter, center, zoom, cols, func):
-    if(zoom != 1):
+    if(zoomjulia):
         center2 = center
     else:
         center2 = 0
@@ -258,10 +258,10 @@ def reloadmain():
 def reloadjulia():
     func = getfunction(fractal)
     if(focusjulia == False):
-        gensetjulia(70, iteration, center, juliazoom, scheme, func).save("set2.png")
+        gensetjulia(70, iteration, center, zoom, scheme, func).save("set2.png")
         display2.switch("set2.png")
     else:
-        gensetjulia(700, iteration, center, juliazoom, scheme, func).save("set.png")
+        gensetjulia(700, iteration, center, zoom, scheme, func).save("set.png")
         display.switch("set.png")
 
 class setdisplay(pygame.sprite.Sprite):
@@ -464,7 +464,6 @@ class buttonfocusjulia(button):
 
     def function(self):
         global focusjulia
-        global juliazoom
         if(focusjulia):
             focusjulia = False
             self.changetext("Focus Julia")
@@ -484,14 +483,11 @@ class buttonzoomjulia(button):
 
     def function(self):
         global zoomjulia
-        global juliazoom
         if(zoomjulia == False):
             zoomjulia = True
-            juliazoom = zoom
             self.changetext("Unzoom Julia")
         else:
             zoomjulia = False
-            juliazoom = 1
             self.changetext("Zoom Julia")
         reloadjulia()
 
@@ -703,7 +699,7 @@ class buttonsaveimage(button):
             if(focusjulia == False):
                 gensetmain(res, iteration, center, zoom, scheme, func).save("savebuffer.png")
             else:
-                gensetjulia(res, iteration, center, juliazoom, scheme, func).save("savebuffer.png")
+                gensetjulia(res, iteration, center, zoom, scheme, func).save("savebuffer.png")
         name = input("Enter a name for the image file (do not include extension): ")
         while(True):
             try:
@@ -731,14 +727,12 @@ class buttonresetzoom(button):
         global zoom
         global iteration
         global zoomjulia
-        global juliazoom
         global reallock
         global imaglock
         center = complex(0, 0)
         zoom = 1
         iteration = 300
         zoomjulia = False
-        juliazoom = 1
         reallock = False
         imaglock = False
         reloadmain()
@@ -771,7 +765,6 @@ zoom = 1
 iteration = 300
 zoomjulia = False
 focusjulia = False
-juliazoom = 1
 reallock = False
 imaglock = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
@@ -824,8 +817,6 @@ while running:
         user.scale(wheelscroll)
         if(pygame.mouse.get_pressed()[0]):
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
-            if(zoomjulia):
-                juliazoom = zoom
             reloadmain()
             reloadjulia()
             info.updateclick()

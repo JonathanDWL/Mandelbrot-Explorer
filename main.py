@@ -300,8 +300,8 @@ class user(pygame.sprite.Sprite):
         self.size += scroll * -10
         if(self.size < 35):
             self.size = 35
-        elif(self.size > 650):
-            self.size = 650
+        elif(self.size > 14000):
+            self.size = 14000
         self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
         pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
         pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
@@ -327,27 +327,16 @@ class userghost(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
         self.rect = self.image.get_rect(center = (9999, 9999))
 
-    def move(self, pos):
-        if(pos != None):
-            mx, my = pos
-            if(not reallock):
-                self.rect.centerx = mx
-            else:
-                self.rect.centerx = 350
-            if(not imaglock):
-                self.rect.centery = my
-            else:
-                self.rect.centery = 350
+    def move(self, pos, scale):
+        px, py = pos
+        self.rect.centerx = px
+        self.rect.centery = py
 
-    def scale(self, scroll):
-        self.size += scroll * -10
-        if(self.size < 35):
-            self.size = 35
-        elif(self.size > 650):
-            self.size = 650
+    def scale(self, scale):
+        self.size = 490000 / scale
         self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
-        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
+        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.size+4, self.size+4), 6)
+        pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
         self.rect = self.image.get_rect(center = self.rect.center)
     
 class dashboard(pygame.sprite.Sprite):
@@ -809,6 +798,7 @@ Image.open("defaultset2.png").save("set2.png")
 display = setdisplay("set.png", 0, 0)
 display2 = setdisplay("set2.png", 930, 0)
 user = user()
+userghost = userghost()
 dashboard = dashboard()
 buttons = pygame.sprite.Group()
 buttons.add(buttonfocusjulia(700, 0, 230, 70, "Focus Julia"))
@@ -848,6 +838,8 @@ while running:
     if(mousepos != None and mousepos[0] < 699 and focusjulia == False and viewmode == False):
         user.move(mousepos)
         user.scale(wheelscroll)
+        userghost.move((user.rect.centerx, user.rect.centery), user.size)
+        userghost.scale(user.size)
         if(pygame.mouse.get_pressed()[0]):
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
             reloadmain()
@@ -856,6 +848,7 @@ while running:
 
     screen.blit(display.image, display.rect.topleft)
     if(focusjulia == False and viewmode == False):
+        screen.blit(userghost.image, userghost.rect.topleft)
         screen.blit(user.image, user.rect.topleft)
     screen.blit(dashboard.image, dashboard.rect.topleft)
     screen.blit(display2.image, display2.rect.topleft)

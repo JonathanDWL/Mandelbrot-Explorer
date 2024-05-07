@@ -317,6 +317,38 @@ class user(pygame.sprite.Sprite):
             newcenter = complex(newcenter.real, center.imag)
         newzoom = zoom * res/self.size
         return(newcenter, newzoom)
+
+class userghost(pygame.sprite.Sprite):
+    def __init__(self):
+        super(userghost, self).__init__()
+        self.size = 350
+        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.size+4, self.size+4), 6)
+        pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
+        self.rect = self.image.get_rect(center = (9999, 9999))
+
+    def move(self, pos):
+        if(pos != None):
+            mx, my = pos
+            if(not reallock):
+                self.rect.centerx = mx
+            else:
+                self.rect.centerx = 350
+            if(not imaglock):
+                self.rect.centery = my
+            else:
+                self.rect.centery = 350
+
+    def scale(self, scroll):
+        self.size += scroll * -10
+        if(self.size < 35):
+            self.size = 35
+        elif(self.size > 650):
+            self.size = 650
+        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
+        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
+        self.rect = self.image.get_rect(center = self.rect.center)
     
 class dashboard(pygame.sprite.Sprite):
     def __init__(self):

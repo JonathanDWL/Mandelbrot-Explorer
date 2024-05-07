@@ -300,8 +300,8 @@ class user(pygame.sprite.Sprite):
         self.size += scroll * -10
         if(self.size < 35):
             self.size = 35
-        elif(self.size > 14000):
-            self.size = 14000
+        elif(self.size > 2800):
+            self.size = 2800
         self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
         pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
         pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
@@ -329,11 +329,18 @@ class userghost(pygame.sprite.Sprite):
 
     def move(self, pos, scale):
         px, py = pos
-        self.rect.centerx = px
-        self.rect.centery = py
+        pl, pt, = px - scale / 2, py - scale / 2
+        self.rect.centerx = 700 * (350 - pl) / scale
+        self.rect.centery = 700 * (350 - pt) / scale
 
-    def scale(self, scale):
-        self.size = 490000 / scale
+    def scale(self, pos, scale):
+        px, py = pos
+        if(max(max(abs(0 - px), abs(700 - px)), max(abs(0 - py), abs(700 - py))) > scale / 2):
+            self.size = 0
+            self.rect.centerx = 9999
+            self.rect.centery = 9999
+        else:
+            self.size = 700 * 700 / scale
         self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
         pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.size+4, self.size+4), 6)
         pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
@@ -839,7 +846,7 @@ while running:
         user.move(mousepos)
         user.scale(wheelscroll)
         userghost.move((user.rect.centerx, user.rect.centery), user.size)
-        userghost.scale(user.size)
+        userghost.scale((user.rect.centerx, user.rect.centery), user.size)
         if(pygame.mouse.get_pressed()[0]):
             center, zoom = user.get_parameters(700, center, zoom, mousepos)
             reloadmain()

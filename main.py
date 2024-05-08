@@ -279,9 +279,10 @@ class user(pygame.sprite.Sprite):
     def __init__(self):
         super(user, self).__init__()
         self.size = 350
-        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
-        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
+        self.visualsize = 350
+        self.image = pygame.Surface((self.visualsize+4, self.visualsize+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.visualsize+4, self.visualsize+4), 6)
+        pygame.draw.rect(self.image, "WHITE", (2, 2, self.visualsize, self.visualsize), 2)
         self.rect = self.image.get_rect(center = (9999, 9999))
 
     def move(self, pos):
@@ -297,14 +298,15 @@ class user(pygame.sprite.Sprite):
                 self.rect.centery = 350
 
     def scale(self, scroll):
-        self.size += scroll * -10
+        self.size += scroll * -15
         if(self.size < 35):
             self.size = 35
         elif(self.size > 2800):
             self.size = 2800
-        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.size+4, self.size+4), 6)
-        pygame.draw.rect(self.image, "WHITE", (2, 2, self.size, self.size), 2)
+        self.visualsize = lerp(self.visualsize, self.size, 0.3)
+        self.image = pygame.Surface((self.visualsize+4, self.visualsize+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (0, 0, 0, 64), (0, 0, self.visualsize+4, self.visualsize+4), 6)
+        pygame.draw.rect(self.image, "WHITE", (2, 2, self.visualsize, self.visualsize), 2)
         self.rect = self.image.get_rect(center = self.rect.center)
 
     def get_parameters(self, res, center, zoom, pos):
@@ -321,29 +323,35 @@ class user(pygame.sprite.Sprite):
 class userghost(pygame.sprite.Sprite):
     def __init__(self):
         super(userghost, self).__init__()
-        self.size = 350
-        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.size+4, self.size+4), 6)
-        pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
-        self.rect = self.image.get_rect(center = (9999, 9999))
+        self.size = 800
+        self.visualsize = 800
+        self.cull = True
+        self.image = pygame.Surface((self.visualsize+4, self.visualsize+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.visualsize+4, self.visualsize+4), 6)
+        pygame.draw.rect(self.image, "BLACK", (2, 2, self.visualsize, self.visualsize), 2)
+        self.rect = self.image.get_rect(center = (350, 350))
 
     def move(self, pos, scale):
         px, py = pos
         pl, pt, = px - scale / 2, py - scale / 2
-        self.rect.centerx = 700 * (350 - pl) / scale
-        self.rect.centery = 700 * (350 - pt) / scale
+        self.cull = max(abs(0 - px), abs(700 - px), abs(0 - py), abs(700 - py)) > scale / 2
+        if(self.cull):
+            self.rect.centerx = lerp(self.rect.centerx, 350, 0.3)
+            self.rect.centery = lerp(self.rect.centery, 350, 0.3)
+        else:
+            self.rect.centerx = 700 * (350 - pl) / scale
+            self.rect.centery = 700 * (350 - pt) / scale
 
     def scale(self, pos, scale):
         px, py = pos
-        if(max(max(abs(0 - px), abs(700 - px)), max(abs(0 - py), abs(700 - py))) > scale / 2):
-            self.size = 0
-            self.rect.centerx = 9999
-            self.rect.centery = 9999
+        if(self.cull):
+            self.size = 800
         else:
             self.size = 700 * 700 / scale
-        self.image = pygame.Surface((self.size+4, self.size+4), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.size+4, self.size+4), 6)
-        pygame.draw.rect(self.image, "BLACK", (2, 2, self.size, self.size), 2)
+        self.visualsize = lerp(self.visualsize, self.size, 0.3)
+        self.image = pygame.Surface((self.visualsize+4, self.visualsize+4), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, (255, 255, 255, 64), (0, 0, self.visualsize+4, self.visualsize+4), 6)
+        pygame.draw.rect(self.image, "BLACK", (2, 2, self.visualsize, self.visualsize), 2)
         self.rect = self.image.get_rect(center = self.rect.center)
     
 class dashboard(pygame.sprite.Sprite):

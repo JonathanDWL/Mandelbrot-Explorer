@@ -503,13 +503,13 @@ class buttonfocusjulia(button):
         global focusjulia
         if(focusjulia):
             focusjulia = False
-            self.changetext("Focus Julia")
+            self.changetext("Focus J")
             Image.open("set3.png").save("set.png")
             display.switch("set.png")
             reloadjulia()
         else:
             focusjulia = True
-            self.changetext("Unfocus Julia")
+            self.changetext("Unfocus J")
             Image.open("set.png").save("set3.png")
             reloadmain()
             reloadjulia()
@@ -522,17 +522,17 @@ class buttonzoomjulia(button):
         global zoomjulia
         if(zoomjulia == False):
             zoomjulia = True
-            self.changetext("Unzoom Julia")
+            self.changetext("Unzoom J")
         else:
             zoomjulia = False
-            self.changetext("Zoom Julia")
+            self.changetext("Zoom J")
         reloadjulia()
 
     def update(self):
         if(zoomjulia):
-            self.changetext("Unzoom Julia")
+            self.changetext("Unzoom J")
         else:
-            self.changetext("Zoom Julia")
+            self.changetext("Zoom J")
 
 class buttonreloadall(button):
     def __init__(self, x, y, width, height, text):
@@ -597,6 +597,16 @@ class buttonchangescheme(button):
         global scheme
         scheme = schemes[(schemes.index(scheme)+self.amount)%len(schemes)]
         schemedisplay.changetext("Palette: "+schemenames[schemes.index(scheme)])
+
+class buttonchangemode(button):
+    def __init__(self, x, y, width, height, text, amount):
+        super(buttonchangemode, self).__init__(x, y, width, height, text)
+        self.amount = amount
+
+    def function(self):
+        global mode
+        mode = modes[(modes.index(mode)+self.amount)%len(modes)]
+        modedisplay.changetext("Mode: "+mode)
 
 class buttonchangefractal(button):
     def __init__(self, x, y, width, height, text, amount):
@@ -797,6 +807,8 @@ gradient([(24, 19, 57), (33, 22, 63), (41, 24, 69), (51, 26, 74), (60, 28, 79), 
 gradient([(91, 40, 102), (158, 69, 103), (202, 118, 104), (225, 174, 122), (233, 233, 167)], 80) + gradient([(233, 233, 167), (174, 196, 137), (119, 158, 112), (68, 121, 88), (12, 85, 66)], 80) + gradient([(12, 85, 66), (31, 115, 108), (62, 145, 152), (101, 175, 195), (146, 205, 236)], 80) + gradient([(146, 205, 236), (117, 165, 211), (102, 125, 182), (96, 83, 145), (91, 40, 102)], 80)]
 scheme = schemes[0]
 schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Space Magic", "Sunrise"]
+modes = ["Escape Step"]
+mode = modes[0]
 center = complex(0, 0)
 zoom = 1
 iteration = 300
@@ -816,8 +828,10 @@ user = user()
 userghost = userghost()
 dashboard = dashboard()
 buttons = pygame.sprite.Group()
-buttons.add(buttonfocusjulia(700, 0, 230, 70, "Focus Julia"))
-buttons.add(buttonzoomjulia(700, 70, 300, 70, "Zoom Julia"))
+buttons.add(buttonfocusjulia(700, 0, 115, 70, "Focus J"))
+buttons.add(buttonzoomjulia(815, 0, 115, 70, "Zoom J"))
+buttons.add(buttontoggleviewmode(700, 70, 300, 70, "Enable View Mode"))
+info = infodisplay()
 buttons.add(buttonreloadall(700, 140, 300, 70, "Reload All"))
 iterdisplay = textdisplay(750, 210, 200, 70, "Iterate: "+str(iteration))
 buttons.add(buttonchangeiter(700, 210, 75, 70, "-10", -10))
@@ -825,13 +839,14 @@ buttons.add(buttonchangeiter(925, 210, 75, 70, "+10", 10))
 schemedisplay = textdisplay(750, 280, 200, 70, "Palette: Standard")
 buttons.add(buttonchangescheme(700, 280, 75, 70, "Prev", -1))
 buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
-fractalnamedisplay = textdisplay(750, 350, 200, 70, "Mandelbrot Set")
-buttons.add(buttonchangefractal(700, 350, 75, 70, "Prev", -1))
-buttons.add(buttonchangefractal(925, 350, 75, 70, "Next", 1))
-buttons.add(buttontogglereallock(700, 420, 150, 70, "Lock Real"))
-buttons.add(buttontoggleimaglock(850, 420, 150, 70, "Lock Imag"))
-buttons.add(buttontoggleviewmode(700, 490, 300, 70, "Enable View Mode"))
-info = infodisplay()
+modedisplay = textdisplay(750, 350, 200, 70, "Mode: Escape Step")
+buttons.add(buttonchangemode(700, 350, 75, 70, "Prev", -1))
+buttons.add(buttonchangemode(925, 350, 75, 70, "Next", 1))
+fractalnamedisplay = textdisplay(750, 420, 200, 70, "Mandelbrot Set")
+buttons.add(buttonchangefractal(700, 420, 75, 70, "Prev", -1))
+buttons.add(buttonchangefractal(925, 420, 75, 70, "Next", 1))
+buttons.add(buttontogglereallock(700, 490, 150, 70, "Lock Real"))
+buttons.add(buttontoggleimaglock(850, 490, 150, 70, "Lock Imag"))
 buttons.add(buttonsaveimage(700, 560, 300, 70, "Save Image"))
 checkconsole = textdisplay3(500, 350, 100, "Check Console Window")
 buttons.add(buttonresetzoom(700, 630, 300, 70, "Reset Zoom"))
@@ -871,6 +886,8 @@ while running:
     iterdisplay.draw()
     screen.blit(schemedisplay.image, schemedisplay.rect.topleft)
     schemedisplay.draw()
+    screen.blit(modedisplay.image, modedisplay.rect.topleft)
+    modedisplay.draw()
     screen.blit(fractalnamedisplay.image, fractalnamedisplay.rect.topleft)
     fractalnamedisplay.draw()
     buttons.draw(screen)

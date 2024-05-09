@@ -9,7 +9,6 @@ Help with creating color schemes: https://mycolor.space/gradient
 '''
 
 import pygame
-import random
 import sys
 from PIL import Image
 
@@ -793,11 +792,6 @@ icon = pygame.image.load("icon.png")
 pygame.display.set_icon(icon)
 
 clock = pygame.time.Clock()
-
-"#321c1a, #532e26, #754330, #955b38, #b4763e, #c28947, #cf9c52, #dbb05d, #debd70, #e2ca83, #e6d698, #ebe2ac"
-"#ebe2ac, #d4d495, #bac781, #9fbb6e, #81ae5e, #6ba056, #55924f, #3f8448, #327243, #27603d, #1f4e36, #1a3d2d"
-
-print(hextorgb("#1a3d2d, #29351d, #312c16, #352316, #321c1a"))
 
 schemes = [gradient([(50, 1, 51), (10, 72, 142), (60, 232, 126), (246, 255, 214)], 80) + gradient([(246, 255, 214), (235, 191, 59), (142, 40, 11), (50, 1, 51)], 80),
 gradient([(55, 5, 50), (120, 55, 72), (172, 115, 100), (215, 182, 146), (252, 252, 212)], 80) + gradient([(252, 252, 212), (215, 182, 146), (172, 115, 100), (120, 55, 72), (55, 5, 50)], 80),

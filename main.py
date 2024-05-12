@@ -1,12 +1,4 @@
-'''Sources:
-
-How the Mandelbrot Set works: https://plus.maths.org/content/what-mandelbrot-set
-
-Centering text on a surface: https://stackoverflow.com/questions/23982907/how-to-center-text-in-pygame
-
-Help with creating color schemes: https://mycolor.space/gradient
-
-'''
+'''https://mycolor.space/gradient'''
 
 import pygame
 import sys
@@ -764,24 +756,41 @@ class infodisplay(pygame.sprite.Sprite):
         except:
             pass
 
-class buttonsaveimage(button):
+class buttonopenconsole(button):
     def __init__(self, x, y, width, height, text):
-        super(buttonsaveimage, self).__init__(x, y, width, height, text)
+        super(buttonopenconsole, self).__init__(x, y, width, height, text)
+        self.hr = "------------------------------------------------------------"
+        self.decompchars = "0123456789.-/e"
+        self.compchars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-=_+[]{};:,.<>/?\|`~"
 
     def function(self):
+        print(self.hr)
         screen.blit(checkconsole.returninfo()[0], checkconsole.returninfo()[1])
         pygame.display.flip()
+        optionstring = "Console options:\n0: Exit console\n1: Save image\n2: Export state\n3: Import state\nChoose an option (enter associated digit): "
         while(True):
-            dosave = input("Save an image? (Y/N): ").upper()
-            if(dosave == "Y"):
-                break
-            elif(dosave == "N"):
+            option = input(optionstring)
+            if(option == "0"):
+                print(self.hr)
+                print("Console closed.")
                 return()
+            elif(option == "1"):
+                print(self.hr)
+                self.saveimage()
+            elif(option == "2"):
+                print(self.hr)
+                self.exportstate()
+            elif(option == "3"):
+                print(self.hr)
+                self.importstate()
             else:
-                print("Invalid answer; try again.")
+                optionstring = "Invalid answer; try again: "
+
+    def saveimage(self):
         Image.open("set.png").save("savebuffer.png")
+        rerenderstring = "Keep the image in its current resolution? (Y/N): "
         while(True):
-            rerender = input("Keep the image in its current resolution? (Y/N): ").upper()
+            rerender = input(rerenderstring).upper()
             if(rerender == "Y"):
                 rerenderbool = False
                 break
@@ -789,15 +798,16 @@ class buttonsaveimage(button):
                 rerenderbool = True
                 break
             else:
-                print("Invalid answer; try again.")
+                rerenderstring = "Invalid answer; try again: "
         res = 700
         if(rerenderbool):
+            resstring = "Enter new resolution (single integer): "
             while(True):
                 try:
-                    res = int(input("Enter new resolution (single integer): "))
+                    res = int(input(resstring))
                     break
                 except:
-                    print("Invalid resolution; try again.")
+                    resstring = "Invalid resolution; try again: "
             funcf, funcm = getfunctions()
             print("Rendering...")
             if(focusjulia == False):
@@ -805,9 +815,10 @@ class buttonsaveimage(button):
             else:
                 gensetjulia(res, iteration, center, zoom, scheme, funcf, funcm).save("savebuffer.png")
         name = input("Enter a name for the image file (do not include extension): ")
+        pathstring = "Enter a filepath for the image file (type 'prev' to use previous path): "
         while(True):
             try:
-                path = input("Enter a filepath for the image file (type 'prev' to use previous path): ")
+                path = input(pathstring)
                 if(path.lower() == "prev"):
                     savepath = open("savepath.txt", "r")
                     path = savepath.read()
@@ -820,7 +831,80 @@ class buttonsaveimage(button):
                 print("Image saved at "+path+".")
                 break
             except:
-                print("Invalid filepath; try again.")
+                pathstring = "Invalid filepath; try again: "
+        print(self.hr)
+
+    def compress(self, state):
+        num = 0
+        for i in range(len(state)):
+            num += self.decompchars.index(state[-1-i]) * len(self.decompchars) ** i
+        for i in range(len(str(num))):
+            placeval = len(self.compchars) ** (i + 1)
+            if(placeval > num):
+                maxex = i
+                break
+        comp = ""
+        for i in range(maxex, -1, -1):
+            digitval = num // (len(self.compchars) ** i)
+            num -= digitval * (len(self.compchars) ** i)
+            comp += self.compchars[digitval]
+        return(comp)
+
+    def decompress(self, state):
+        num = 0
+        for i in range(len(state)):
+            num += self.compchars.index(state[-1-i]) * len(self.compchars) ** i
+        for i in range(len(str(num))):
+            placeval = len(self.decompchars) ** (i + 1)
+            if(placeval > num):
+                maxex = i
+                break
+        decomp = ""
+        for i in range(maxex, -1, -1):
+            digitval = num // (len(self.decompchars) ** i)
+            num -= digitval * (len(self.decompchars) ** i)
+            decomp += self.decompchars[digitval]
+        if(decomp[0] == "/"):
+            decomp = "0" + decomp
+        return(decomp)
+
+    def exportstate(self):
+        state = str(fractals.index(fractal))+"/"+str(center.real)+"/"+str(center.imag)+"/"+str(zoom)+"/"+str(iteration)+"/"+str(schemes.index(scheme))+"/"+str(modes.index(mode))
+        print("State ID: "+self.compress(state))
+        print(self.hr)
+
+    def importstate(self):
+        global fractal
+        global center
+        global zoom
+        global iteration
+        global scheme
+        global mode
+        statestring = "Enter state ID here: "
+        while(True):
+            try:
+                state = self.decompress(input(statestring))
+                slash1 = state.index("/")
+                slash2 = slash1 + state[slash1+1:].index("/") + 1
+                slash3 = slash2 + state[slash2+1:].index("/") + 1
+                slash4 = slash3 + state[slash3+1:].index("/") + 1
+                slash5 = slash4 + state[slash4+1:].index("/") + 1
+                slash6 = slash5 + state[slash5+1:].index("/") + 1
+                fractal = fractals[int(state[:slash1])]
+                center = complex(float(state[slash1+1:slash2]), float(state[slash2+1:slash3]))
+                zoom = float(state[slash3+1:slash4])
+                iteration = int(state[slash4+1:slash5])
+                scheme = schemes[int(state[slash5+1:slash6])]
+                mode = modes[int(state[slash6+1:])]
+                print("Loading state...")
+                reloadmain()
+                reloadjulia()
+                info.updateclick()
+                print("State loaded. Close console to see changes.")
+                break
+            except:
+                statestring = "Invalid state; try again: "
+        print(self.hr)
 
 class buttonresetzoom(button):
     def __init__(self, x, y, width, height, text):
@@ -902,7 +986,7 @@ buttons.add(buttonchangefractal(700, 420, 75, 70, "Prev", -1))
 buttons.add(buttonchangefractal(925, 420, 75, 70, "Next", 1))
 buttons.add(buttontogglereallock(700, 490, 150, 70, "Lock Real"))
 buttons.add(buttontoggleimaglock(850, 490, 150, 70, "Lock Imag"))
-buttons.add(buttonsaveimage(700, 560, 300, 70, "Save Image"))
+buttons.add(buttonopenconsole(700, 560, 300, 70, "Open Console"))
 checkconsole = textdisplay3(500, 350, 100, "Check Console Window")
 buttons.add(buttonresetzoom(700, 630, 300, 70, "Reset Zoom"))
 

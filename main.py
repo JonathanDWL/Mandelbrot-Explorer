@@ -43,109 +43,154 @@ def gradient(colors, steps):
         list.append(lerpcolor(colors[index], colors[index+1], interp-index))
     return(list)
 
-def iterman(z, c, iterate):
+def transform(z, c):
+    if(fractal in ["Burning Ship", "Buffalo Fractal", "Burningbrot Hybrid", "Mandelship Hybrid"]):
+        z = complex(z.real, -z.imag)
+        c = complex(c.real, -c.imag)
+    return(z, c)
+
+def findradius():
+    if(fractal not in ["Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot"]):
+        return(2)
+    elif(fractal == "Cubic Mandelbrot"):
+        return(2**(1/2))
+    elif(fractal == "Quartic Mandelbrot"):
+        return(2**(1/3))
+    elif(fractal == "Quintic Mandelbrot"):
+        return(2**(1/4))
+
+def escapetime(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = findradius()
     for i in range(iterate):
-        z = z**2 + c
-        if(abs(z) > 2):
+        z = func(z, c, i)
+        if(abs(z) > radius):
             return(i)
     return(-1)
 
-def itercubic(z, c, iterate):
+def pointtrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = findradius()
+    mindist = 9999
     for i in range(iterate):
-        z = z**3 + c
-        if(abs(z) > 2**(1/2)):
-            return(i)
-    return(-1)
+        z = func(z, c, i)
+        dist = abs(z)
+        if(dist < mindist):
+            mindist = dist
+        if(abs(z) > radius):
+            break
+    return(int(mindist * 200))
 
-def iterquartic(z, c, iterate):
+def ringtrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = findradius()
+    mindist = 9999
     for i in range(iterate):
-        z = z**4 + c
-        if(abs(z) > 2**(1/3)):
-            return(i)
-    return(-1)
+        z = func(z, c, i)
+        dist = abs(abs(z) - 1)
+        if(dist < mindist):
+            mindist = dist
+        if(abs(z) > radius):
+            break
+    return(int(mindist * 200))
 
-def iterquintic(z, c, iterate):
+def fourpointtrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = 2.5
+    mindist = 9999
     for i in range(iterate):
-        z = z**5 + c
-        if(abs(z) > 2**(1/4)):
-            return(i)
-    return(-1)
+        z = func(z, c, i)
+        dist = min(abs(z + complex(1, 1)), abs(z + complex(-1, 1)), abs(z + complex(1, -1)), abs(z + complex(-1, -1)))
+        if(dist < mindist):
+            mindist = dist
+        if(abs(z) > radius):
+            break
+    return(int(mindist * 200))
 
-def itership(z, c, iterate):
-    z = complex(z.real, -z.imag)
-    c = complex(c.real, -c.imag)
+def fourringtrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = 2**(1/2) + 1
+    mindist = 9999
     for i in range(iterate):
-        z = complex(abs(z.real), abs(z.imag))**2 + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
+        z = func(z, c, i)
+        dist = min(abs(abs(z + complex(1, 1)) - 1), abs(abs(z + complex(-1, 1)) - 1), abs(abs(z + complex(1, -1)) - 1), abs(abs(z + complex(-1, -1)) - 1))
+        if(dist < mindist):
+            mindist = dist
+        if(abs(z) > radius):
+            break
+    return(int(mindist * 200))
 
-def iterceltic(z, c, iterate):
+def xtrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = 2.5
+    mindist = 9999
     for i in range(iterate):
-        z2 = z**2
-        z = complex(abs(z2.real), z2.imag) + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
-
-def iterbuffalo(z, c, iterate):
-    z = complex(-z.real, z.imag)
-    c = complex(-c.real, c.imag)
-    for i in range(iterate):
-        z2 = z**2
-        z = complex(abs(z2.real), abs(z2.imag)) - c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
-
-def itertricorn(z, c, iterate):
-    for i in range(iterate):
-        z = complex(z.real, -z.imag)**2 + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
-
-def iterburningbrot(z, c, iterate):
-    z = complex(z.real, -z.imag)
-    c = complex(c.real, -c.imag)
-    for i in range(iterate):
-        if(i % 2 == 0):
-            z = complex(abs(z.real), abs(z.imag))**2 + c
+        z = func(z, c, i)
+        if(z.real + z.imag < 4 and -z.real + z.imag < 4 and z.real - z.imag < 4 and -z.real - z.imag < 4):
+            dist = min(abs(z.real - z.imag) * 2**(1/2)/2, abs(z.real + z.imag) * 2**(1/2)/2)
         else:
-            z = z**2 + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
+            dist = min(abs(z + complex(2, 2)), abs(z + complex(-2, 2)), abs(z + complex(2, -2)), abs(z + complex(-2, -2)))
+        if(dist < mindist):
+            mindist = dist
+        if(abs(z) > radius):
+            break
+    return(int(mindist * 200))
 
-def itermandelship(z, c, iterate):
-    z = complex(z.real, -z.imag)
-    c = complex(c.real, -c.imag)
-    for i in range(iterate):
-        if(i % 2 == 0):
-            z = z**2 + c
-        else:
-            z = complex(abs(z.real), abs(z.imag))**2 + c
-        if(abs(z) > 2):
-            return(i)
-    return(-1)
+def iterman(z, c, i):
+    return(z**2 + c)
 
-def gensetmain(res, iter, center, zoom, cols, func):
+def itercubic(z, c, i):
+    return(z**3 + c)
+
+def iterquartic(z, c, i):
+    return(z**4 + c)
+
+def iterquintic(z, c, i):
+    return(z**5 + c)
+
+def itership(z, c, i):
+    return(complex(abs(z.real), abs(z.imag))**2 + c)
+
+def iterceltic(z, c, i):
+    z2 = z**2
+    return(complex(abs(z2.real), z2.imag) + c)
+
+def iterbuffalo(z, c, i):
+    z2 = z**2
+    return(complex(abs(z2.real), abs(z2.imag)) + c)
+
+def itertricorn(z, c, i):
+    return(complex(z.real, -z.imag)**2 + c)
+
+def iterburningbrot(z, c, i):
+    if(i % 2 == 0):
+        return(itership(z, c, i))
+    else:
+        return(iterman(z, c, i))
+
+def itermandelship(z, c, i):
+    if(i % 2 == 0):
+        return(iterman(z, c, i))
+    else:
+        return(itership(z, c, i))
+
+def gensetmain(res, iter, center, zoom, cols, funcf, funcm):
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
-        return(gensetmainaxis(res, iter, center.real, zoom, cols, func))
+        return(gensetmainaxis(res, iter, center.real, zoom, cols, funcf, funcm))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
-            numS = func(0, num, iter)
+            numS = funcm(0, num, iter, funcf)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def gensetmainaxis(res, iter, center, zoom, cols, func):
+def gensetmainaxis(res, iter, center, zoom, cols, funcf, funcm):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -153,7 +198,7 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
             if(y <= -(-res//2)-1):
                 halfres = res/2-0.5
                 num = complex((x-halfres)/halfres*(2/zoom)+center, (y-halfres)/halfres*(-2/zoom))
-                numS = func(0, num, iter)
+                numS = funcm(0, num, iter, funcf)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
@@ -162,30 +207,30 @@ def gensetmainaxis(res, iter, center, zoom, cols, func):
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
-def gensetjulia(res, iter, center, zoom, cols, func):
+def gensetjulia(res, iter, center, zoom, cols, funcf, funcm):
     if(zoomjulia):
         center2 = center
     else:
         center2 = 0
         zoom = 1
     if(center2 == 0 and fractal in ["Burning Ship", "Buffalo Fractal", "Burningbrot Hybrid"]):
-        return(gensetjuliacross(res, iter, center, zoom, cols, func))
+        return(gensetjuliacross(res, iter, center, zoom, cols, funcf, funcm))
     elif(center2 == 0 and fractal in ["Mandelbrot Set", "Quartic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn", "Mandelship Hybrid"]):
-        return(gensetjuliaorigin(res, iter, center, zoom, cols, func))
+        return(gensetjuliaorigin(res, iter, center, zoom, cols, funcf, funcm))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
-            numS = func(num, center, iter)
+            numS = funcm(num, center, iter, funcf)
             if(numS < 0):
                 pixels[x,y] = (0, 0, 0)
             else:
                 pixels[x,y] = cols[numS%len(cols)]
     return(canvas)
 
-def gensetjuliacross(res, iter, center, zoom, cols, func):
+def gensetjuliacross(res, iter, center, zoom, cols, funcf, funcm):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -194,7 +239,7 @@ def gensetjuliacross(res, iter, center, zoom, cols, func):
                 if(y <= -(-res//2)-1):
                     halfres = res/2-0.5
                     num = complex((x-halfres)/halfres*(2/zoom), (y-halfres)/halfres*(-2/zoom))
-                    numS = func(num, center, iter)
+                    numS = funcm(num, center, iter, funcf)
                     if(numS < 0):
                         pixels[x,y] = (0, 0, 0)
                     else:
@@ -206,7 +251,7 @@ def gensetjuliacross(res, iter, center, zoom, cols, func):
                 pixels[x,y] = pixels[-1-x,y]
     return(canvas)
 
-def gensetjuliaorigin(res, iter, center, zoom, cols, func):
+def gensetjuliaorigin(res, iter, center, zoom, cols, funcf, funcm):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
     for x in range(res):
@@ -214,7 +259,7 @@ def gensetjuliaorigin(res, iter, center, zoom, cols, func):
             if(x <= -(-res//2)-1):
                 halfres = res/2-0.5
                 num = complex((x-halfres)/halfres*(2/zoom), (y-halfres)/halfres*(-2/zoom))
-                numS = func(num, center, iter)
+                numS = funcm(num, center, iter, funcf)
                 if(numS < 0):
                     pixels[x,y] = (0, 0, 0)
                 else:
@@ -223,45 +268,58 @@ def gensetjuliaorigin(res, iter, center, zoom, cols, func):
                 pixels[x,y] = pixels[-1-x,-1-y]
     return(canvas)
 
-def getfunction(fractal):
+def getfunctions():
     if(fractal == "Mandelbrot Set"):
-        return(iterman)
+        funcf = iterman
     elif(fractal == "Cubic Mandelbrot"):
-        return(itercubic)
+        funcf = itercubic
     elif(fractal == "Quartic Mandelbrot"):
-        return(iterquartic)
+        funcf = iterquartic
     elif(fractal == "Quintic Mandelbrot"):
-        return(iterquintic)
+        funcf = iterquintic
     elif(fractal == "Burning Ship"):
-        return(itership)
+        funcf = itership
     elif(fractal == "Celtic Fractal"):
-        return(iterceltic)
+        funcf = iterceltic
     elif(fractal == "Buffalo Fractal"):
-        return(iterbuffalo)
+        funcf = iterbuffalo
     elif(fractal == "Mandelbar Tricorn"):
-        return(itertricorn)
+        funcf = itertricorn
     elif(fractal == "Burningbrot Hybrid"):
-        return(iterburningbrot)
+        funcf = iterburningbrot
     elif(fractal == "Mandelship Hybrid"):
-        return(itermandelship)
+        funcf = itermandelship
+    if(mode == "Escape Time"):
+        funcm = escapetime
+    elif(mode == "Point Trap"):
+        funcm = pointtrap
+    elif(mode == "Ring Trap"):
+        funcm = ringtrap
+    elif(mode == "Four Point Trap"):
+        funcm = fourpointtrap
+    elif(mode == "Four Ring Trap"):
+        funcm = fourringtrap
+    elif(mode == "X Trap"):
+        funcm = xtrap
+    return(funcf, funcm)
 
 def reloadmain():
-    func = getfunction(fractal)
+    funcf, funcm = getfunctions()
     if(focusjulia == False):
-        gensetmain(700, iteration, center, zoom, scheme, func).save("set.png")
+        gensetmain(700, iteration, center, zoom, scheme, funcf, funcm).save("set.png")
         display.switch("set.png")
     else:
-        gensetmain(70, iteration, center, zoom, scheme, func).save("set2.png")
+        gensetmain(70, iteration, center, zoom, scheme, funcf, funcm).save("set2.png")
         display2.switch("set2.png")
-        gensetmain(700, iteration, center, zoom, scheme, func).save("set3.png")
+        gensetmain(700, iteration, center, zoom, scheme, funcf, funcm).save("set3.png")
 
 def reloadjulia():
-    func = getfunction(fractal)
+    funcf, funcm = getfunctions()
     if(focusjulia == False):
-        gensetjulia(70, iteration, center, zoom, scheme, func).save("set2.png")
+        gensetjulia(70, iteration, center, zoom, scheme, funcf, funcm).save("set2.png")
         display2.switch("set2.png")
     else:
-        gensetjulia(700, iteration, center, zoom, scheme, func).save("set.png")
+        gensetjulia(700, iteration, center, zoom, scheme, funcf, funcm).save("set.png")
         display.switch("set.png")
 
 class setdisplay(pygame.sprite.Sprite):
@@ -740,12 +798,12 @@ class buttonsaveimage(button):
                     break
                 except:
                     print("Invalid resolution; try again.")
-            func = getfunction(fractal)
+            funcf, funcm = getfunctions()
             print("Rendering...")
             if(focusjulia == False):
-                gensetmain(res, iteration, center, zoom, scheme, func).save("savebuffer.png")
+                gensetmain(res, iteration, center, zoom, scheme, funcf, funcm).save("savebuffer.png")
             else:
-                gensetjulia(res, iteration, center, zoom, scheme, func).save("savebuffer.png")
+                gensetjulia(res, iteration, center, zoom, scheme, funcf, funcm).save("savebuffer.png")
         name = input("Enter a name for the image file (do not include extension): ")
         while(True):
             try:
@@ -804,7 +862,7 @@ gradient([(91, 40, 102), (158, 69, 103), (202, 118, 104), (225, 174, 122), (233,
 gradient([(50, 28, 26), (83, 46, 38), (117, 67, 48), (149, 91, 56), (180, 118, 62), (194, 137, 71), (207, 156, 82), (219, 176, 93), (222, 189, 112), (226, 202, 131), (230, 214, 152), (235, 226, 172)], 80) + gradient([(235, 226, 172), (212, 212, 149), (186, 199, 129), (159, 187, 110), (129, 174, 94), (107, 160, 86), (85, 146, 79), (63, 132, 72), (50, 114, 67), (39, 96, 61), (31, 78, 54), (26, 61, 45)], 80) + gradient([(26, 61, 45), (41, 53, 29), (49, 44, 22), (53, 35, 22), (50, 28, 26)], 40)]
 scheme = schemes[0]
 schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Arcade", "Cotton Candy", "Sahara"]
-modes = ["Escape Step"]
+modes = ["Escape Time", "Point Trap", "Ring Trap", "Four Point Trap", "Four Ring Trap", "X Trap"]
 mode = modes[0]
 center = complex(0, 0)
 zoom = 1

@@ -70,8 +70,10 @@ def pointtrap(z, c, iterate, func):
         if(dist < mindist):
             mindist = dist
         if(abs(z) > radius):
-            break
-    return(int(mindist * 200))
+            return(int(mindist * 200))
+    if(not trapvoid):
+        return(int(mindist * 200))
+    return(-1)
 
 def ringtrap(z, c, iterate, func):
     z, c = transform(z, c)
@@ -83,8 +85,10 @@ def ringtrap(z, c, iterate, func):
         if(dist < mindist):
             mindist = dist
         if(abs(z) > radius):
-            break
-    return(int(mindist * 200))
+            return(int(mindist * 200))
+    if(not trapvoid):
+        return(int(mindist * 200))
+    return(-1)
 
 def fourpointtrap(z, c, iterate, func):
     z, c = transform(z, c)
@@ -96,8 +100,10 @@ def fourpointtrap(z, c, iterate, func):
         if(dist < mindist):
             mindist = dist
         if(abs(z) > radius):
-            break
-    return(int(mindist * 200))
+            return(int(mindist * 200))
+    if(not trapvoid):
+        return(int(mindist * 200))
+    return(-1)
 
 def fourringtrap(z, c, iterate, func):
     z, c = transform(z, c)
@@ -109,8 +115,10 @@ def fourringtrap(z, c, iterate, func):
         if(dist < mindist):
             mindist = dist
         if(abs(z) > radius):
-            break
-    return(int(mindist * 200))
+            return(int(mindist * 200))
+    if(not trapvoid):
+        return(int(mindist * 200))
+    return(-1)
 
 def xtrap(z, c, iterate, func):
     z, c = transform(z, c)
@@ -125,8 +133,10 @@ def xtrap(z, c, iterate, func):
         if(dist < mindist):
             mindist = dist
         if(abs(z) > radius):
-            break
-    return(int(mindist * 200))
+            return(int(mindist * 200))
+    if(not trapvoid):
+        return(int(mindist * 200))
+    return(-1)
 
 def iterman(z, c, i):
     return(z**2 + c)
@@ -943,9 +953,10 @@ gradient([(247, 87, 129), (247, 177, 101)], 20) + gradient([(247, 177, 101), (24
 gradient([(102, 7, 75), (247, 87, 129)], 80) + gradient([(247, 87, 129), (102, 7, 7)], 80) + gradient([(102, 7, 7), (247, 177, 101)], 80) + gradient([(247, 177, 101), (102, 78, 7)], 80) + gradient([(102, 78, 7), (242, 250, 130)], 80) + gradient([(242, 250, 130), (43, 102, 7)], 80) + gradient([(43, 102, 7), (101, 247, 106)], 80) + gradient([(101, 247, 106), (50, 168, 117)], 80) + gradient([(50, 168, 117), (101, 247, 242)], 80) + gradient([(101, 247, 242), (7, 53, 102)], 80) + gradient([(7, 53, 102), (87, 98, 247)], 80) + gradient([(87, 98, 247), (53, 7, 102)], 80) + gradient([(53, 7, 102), (233, 109, 247)], 80) + gradient([(233, 109, 247), (102, 7, 75)], 80),
 gradient([(24, 19, 57), (33, 22, 63), (41, 24, 69), (51, 26, 74), (60, 28, 79), (90, 34, 88), (119, 40, 94), (148, 49, 96), (196, 75, 92), (230, 113, 81), (249, 160, 71), (249, 211, 74)], 80) + gradient([(249, 211, 74), (184, 194, 75), (128, 172, 84), (82, 148, 91), (48, 121, 92), (15, 105, 94), (0, 88, 90), (0, 71, 82), (0, 59, 81), (0, 47, 77), (4, 34, 70), (24, 19, 57)], 80),
 gradient([(91, 40, 102), (158, 69, 103), (202, 118, 104), (225, 174, 122), (233, 233, 167)], 80) + gradient([(233, 233, 167), (174, 196, 137), (119, 158, 112), (68, 121, 88), (12, 85, 66)], 80) + gradient([(12, 85, 66), (31, 115, 108), (62, 145, 152), (101, 175, 195), (146, 205, 236)], 80) + gradient([(146, 205, 236), (117, 165, 211), (102, 125, 182), (96, 83, 145), (91, 40, 102)], 80),
-gradient([(50, 28, 26), (83, 46, 38), (117, 67, 48), (149, 91, 56), (180, 118, 62), (194, 137, 71), (207, 156, 82), (219, 176, 93), (222, 189, 112), (226, 202, 131), (230, 214, 152), (235, 226, 172)], 80) + gradient([(235, 226, 172), (212, 212, 149), (186, 199, 129), (159, 187, 110), (129, 174, 94), (107, 160, 86), (85, 146, 79), (63, 132, 72), (50, 114, 67), (39, 96, 61), (31, 78, 54), (26, 61, 45)], 80) + gradient([(26, 61, 45), (41, 53, 29), (49, 44, 22), (53, 35, 22), (50, 28, 26)], 40)]
+gradient([(50, 28, 26), (83, 46, 38), (117, 67, 48), (149, 91, 56), (180, 118, 62), (194, 137, 71), (207, 156, 82), (219, 176, 93), (222, 189, 112), (226, 202, 131), (230, 214, 152), (235, 226, 172)], 80) + gradient([(235, 226, 172), (212, 212, 149), (186, 199, 129), (159, 187, 110), (129, 174, 94), (107, 160, 86), (85, 146, 79), (63, 132, 72), (50, 114, 67), (39, 96, 61), (31, 78, 54), (26, 61, 45)], 80) + gradient([(26, 61, 45), (41, 53, 29), (49, 44, 22), (53, 35, 22), (50, 28, 26)], 40),
+gradient([(255, 255, 255), (204, 240, 235)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(224, 74, 192), (168, 58, 201)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(237, 230, 92), (224, 173, 63)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(74, 224, 217), (65, 136, 217)], 15) + [(39, 35, 48) for i in range(2)]]
 scheme = schemes[0]
-schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Arcade", "Cotton Candy", "Sahara"]
+schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Arcade", "Cotton Candy", "Sahara", "Pop Out"]
 modes = ["Escape Time", "Point Trap", "Ring Trap", "Four Point Trap", "Four Ring Trap", "X Trap"]
 mode = modes[0]
 center = complex(0, 0)
@@ -958,6 +969,7 @@ imaglock = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
 viewmode = False
+trapvoid = False
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
@@ -978,7 +990,7 @@ buttons.add(buttonchangeiter(925, 210, 75, 70, "+10", 10))
 schemedisplay = textdisplay(750, 280, 200, 70, "Palette: Standard")
 buttons.add(buttonchangescheme(700, 280, 75, 70, "Prev", -1))
 buttons.add(buttonchangescheme(925, 280, 75, 70, "Next", 1))
-modedisplay = textdisplay(750, 350, 200, 70, "Mode: Escape Step")
+modedisplay = textdisplay(750, 350, 200, 70, "Mode: Escape Time")
 buttons.add(buttonchangemode(700, 350, 75, 70, "Prev", -1))
 buttons.add(buttonchangemode(925, 350, 75, 70, "Next", 1))
 fractalnamedisplay = textdisplay(750, 420, 200, 70, "Mandelbrot Set")

@@ -193,7 +193,7 @@ def itermandelship(z, c, i):
 
 def gensetmain(res, iter, center, zoom, cols, funcf, funcm):
     if(funcm == imagetrap):
-        return(gensetmainimage(res, iter, center, zoom, cols, funcf))
+        return(gensetmainimage(res, iter, center, zoom, funcf))
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, funcf, funcm))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
@@ -226,10 +226,10 @@ def gensetmainaxis(res, iter, center, zoom, cols, funcf, funcm):
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
-def gensetmainimage(res, iter, center, zoom, cols, funcf):
+def gensetmainimage(res, iter, center, zoom, funcf):
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
     pixels = canvas.load()
-    image = Image.open("imagetrapimage.jpg")
+    image = Image.open("imagetrapimage.png")
     imagepixels = image.load()
     for x in range(res):
         for y in range(res):
@@ -239,23 +239,20 @@ def gensetmainimage(res, iter, center, zoom, cols, funcf):
             if(numP == None):
                 pixels[x,y] = (0, 0, 0)
             else:
-                imgx = int((numP.real/4+1/2)*image.size[0])
-                imgy = int((-numP.imag/4+1/2)*image.size[1])
+                imgx = int((numP.real/4+1/2)*image.size[0])-1
+                imgy = int((-numP.imag/4+1/2)*image.size[1])-1
                 imgxl = imgx%image.size[0]
                 if(imgx//image.size[0]%2 == 1):
                     imgxl *= -1
                 imgyl = imgy%image.size[1]
                 if(imgy//image.size[1]%2 == 1):
                     imgyl *= -1
-                if(numS%2 == 1):
-                    imgxl *= -1
-                    imgyl *= -1
                 pixels[x,y] = imagepixels[imgxl,imgyl]
     return(canvas)
 
 def gensetjulia(res, iter, center, zoom, cols, funcf, funcm):
     if(funcm == imagetrap):
-        return(gensetjuliaimage(res, iter, center, zoom, cols, funcf))
+        return(gensetjuliaimage(res, iter, center, zoom, funcf))
     if(zoomjulia):
         center2 = center
     else:
@@ -316,7 +313,7 @@ def gensetjuliaorigin(res, iter, center, zoom, cols, funcf, funcm):
                 pixels[x,y] = pixels[-1-x,-1-y]
     return(canvas)
 
-def gensetjuliaimage(res, iter, center, zoom, cols, funcf):
+def gensetjuliaimage(res, iter, center, zoom, funcf):
     if(zoomjulia):
         center2 = center
     else:
@@ -330,20 +327,17 @@ def gensetjuliaimage(res, iter, center, zoom, cols, funcf):
         for y in range(res):
             halfres = res/2-0.5
             num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
-            numP, numS = imagetrap(0, num, iter, funcf)
+            numP, numS = imagetrap(num, center, iter, funcf)
             if(numP == None):
                 pixels[x,y] = (0, 0, 0)
             else:
-                imgx = int((numP.real/4+1/2)*image.size[0])
-                imgy = int((-numP.imag/4+1/2)*image.size[1])
+                imgx = int((numP.real/4+1/2)*image.size[0])-1
+                imgy = int((-numP.imag/4+1/2)*image.size[1])-1
                 imgxl = imgx%image.size[0]
                 if(imgx//image.size[0]%2 == 1):
                     imgxl *= -1
                 imgyl = imgy%image.size[1]
                 if(imgy//image.size[1]%2 == 1):
-                    imgyl *= -1
-                if(numS%2 == 1):
-                    imgxl *= -1
                     imgyl *= -1
                 pixels[x,y] = imagepixels[imgxl,imgyl]
     return(canvas)
@@ -1049,7 +1043,7 @@ imaglock = False
 fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
 fractal = fractals[0]
 viewmode = False
-trapvoid = False
+trapvoid = True
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")

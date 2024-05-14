@@ -138,6 +138,21 @@ def xtrap(z, c, iterate, func):
         return(int(mindist * 200))
     return(-1)
 
+def imagetrap(z, c, iterate, func):
+    z, c = transform(z, c)
+    radius = findradius()
+    mindist = (9999, complex(9999, 9999), 0)
+    for i in range(iterate):
+        z = func(z, c, i)
+        dist = abs(z)
+        if(dist < mindist[0]):
+            mindist = (dist, z, i)
+        if(abs(z) > radius):
+            return(mindist[1], mindist[2])
+    if(not trapvoid):
+        return(mindist[1], mindist[2])
+    return(None, 0)
+
 def iterman(z, c, i):
     return(z**2 + c)
 
@@ -177,6 +192,8 @@ def itermandelship(z, c, i):
         return(itership(z, c, i))
 
 def gensetmain(res, iter, center, zoom, cols, funcf, funcm):
+    if(funcm == imagetrap):
+        return(gensetmainimage(res, iter, center, zoom, cols, funcf))
     if(center.imag == 0 and fractal in ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Celtic Fractal", "Mandelbar Tricorn"]):
         return(gensetmainaxis(res, iter, center.real, zoom, cols, funcf, funcm))
     canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
@@ -209,7 +226,36 @@ def gensetmainaxis(res, iter, center, zoom, cols, funcf, funcm):
                 pixels[x,y] = pixels[x,-1-y]
     return(canvas)
 
+def gensetmainimage(res, iter, center, zoom, cols, funcf):
+    canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
+    pixels = canvas.load()
+    image = Image.open("imagetrapimage.jpg")
+    imagepixels = image.load()
+    for x in range(res):
+        for y in range(res):
+            halfres = res/2-0.5
+            num = complex((x-halfres)/halfres*(2/zoom)+center.real, (y-halfres)/halfres*(-2/zoom)+center.imag)
+            numP, numS = imagetrap(0, num, iter, funcf)
+            if(numP == None):
+                pixels[x,y] = (0, 0, 0)
+            else:
+                imgx = int((numP.real/4+1/2)*image.size[0])
+                imgy = int((-numP.imag/4+1/2)*image.size[1])
+                imgxl = imgx%image.size[0]
+                if(imgx//image.size[0]%2 == 1):
+                    imgxl *= -1
+                imgyl = imgy%image.size[1]
+                if(imgy//image.size[1]%2 == 1):
+                    imgyl *= -1
+                if(numS%2 == 1):
+                    imgxl *= -1
+                    imgyl *= -1
+                pixels[x,y] = imagepixels[imgxl,imgyl]
+    return(canvas)
+
 def gensetjulia(res, iter, center, zoom, cols, funcf, funcm):
+    if(funcm == imagetrap):
+        return(gensetjuliaimage(res, iter, center, zoom, cols, funcf))
     if(zoomjulia):
         center2 = center
     else:
@@ -270,6 +316,38 @@ def gensetjuliaorigin(res, iter, center, zoom, cols, funcf, funcm):
                 pixels[x,y] = pixels[-1-x,-1-y]
     return(canvas)
 
+def gensetjuliaimage(res, iter, center, zoom, cols, funcf):
+    if(zoomjulia):
+        center2 = center
+    else:
+        center2 = 0
+        zoom = 1
+    canvas = Image.new(mode="RGB", size=(res, res), color="WHITE")
+    pixels = canvas.load()
+    image = Image.open("imagetrapimage.jpg")
+    imagepixels = image.load()
+    for x in range(res):
+        for y in range(res):
+            halfres = res/2-0.5
+            num = complex((x-halfres)/halfres*(2/zoom)+center2.real, (y-halfres)/halfres*(-2/zoom)+center2.imag)
+            numP, numS = imagetrap(0, num, iter, funcf)
+            if(numP == None):
+                pixels[x,y] = (0, 0, 0)
+            else:
+                imgx = int((numP.real/4+1/2)*image.size[0])
+                imgy = int((-numP.imag/4+1/2)*image.size[1])
+                imgxl = imgx%image.size[0]
+                if(imgx//image.size[0]%2 == 1):
+                    imgxl *= -1
+                imgyl = imgy%image.size[1]
+                if(imgy//image.size[1]%2 == 1):
+                    imgyl *= -1
+                if(numS%2 == 1):
+                    imgxl *= -1
+                    imgyl *= -1
+                pixels[x,y] = imagepixels[imgxl,imgyl]
+    return(canvas)
+
 def getfunctions():
     if(fractal == "Mandelbrot Set"):
         funcf = iterman
@@ -303,6 +381,8 @@ def getfunctions():
         funcm = fourringtrap
     elif(mode == "X Trap"):
         funcm = xtrap
+    elif(mode == "Image Trap"):
+        funcm = imagetrap
     return(funcf, funcm)
 
 def reloadmain():
@@ -957,7 +1037,7 @@ gradient([(50, 28, 26), (83, 46, 38), (117, 67, 48), (149, 91, 56), (180, 118, 6
 gradient([(255, 255, 255), (204, 240, 235)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(224, 74, 192), (168, 58, 201)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(237, 230, 92), (224, 173, 63)], 15) + [(39, 35, 48) for i in range(2)] + gradient([(74, 224, 217), (65, 136, 217)], 15) + [(39, 35, 48) for i in range(2)]]
 scheme = schemes[0]
 schemenames = ["Standard", "Rose Gold", "Ice & Fire", "Plant Life", "Rainbow 1", "Rainbow 2", "Arcade", "Cotton Candy", "Sahara", "Pop Out"]
-modes = ["Escape Time", "Point Trap", "Ring Trap", "Four Point Trap", "Four Ring Trap", "X Trap"]
+modes = ["Escape Time", "Point Trap", "Ring Trap", "Four Point Trap", "Four Ring Trap", "X Trap", "Image Trap"]
 mode = modes[0]
 center = complex(0, 0)
 zoom = 1

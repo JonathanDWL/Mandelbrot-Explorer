@@ -179,17 +179,19 @@ def iterbuffalo(z, c, i):
 def itertricorn(z, c, i):
     return(complex(z.real, -z.imag)**2 + c)
 
+def iterhybrid(z, c, i, funcs):
+    return(funcs[i%len(funcs)](z, c, i))
+
 def iterburningbrot(z, c, i):
-    if(i % 2 == 0):
-        return(itership(z, c, i))
-    else:
-        return(iterman(z, c, i))
+    return(iterhybrid(z, c, i, [itership, iterman]))
 
 def itermandelship(z, c, i):
-    if(i % 2 == 0):
-        return(iterman(z, c, i))
-    else:
-        return(itership(z, c, i))
+    return(iterhybrid(z, c, i, [iterman, itership]))
+
+def itercustomhybrid(z, c, i):
+    return(iterhybrid(z, c, i, customhybrid))
+
+funcmappings = {"iterman": iterman, "itercubic": itercubic, "iterquartic": iterquartic, "iterquintic": iterquintic, "itership": itership, "iterceltic": iterceltic, "iterbuffalo": iterbuffalo, "itertricorn": itertricorn}
 
 def gensetmain(res, iter, center, zoom, cols, funcf, funcm):
     if(funcm == imagetrap):
@@ -363,6 +365,8 @@ def getfunctions():
         funcf = iterburningbrot
     elif(fractal == "Mandelship Hybrid"):
         funcf = itermandelship
+    elif(fractal == "Custom Hybrid"):
+        funcf = itercustomhybrid
     if(mode == "Escape Time"):
         funcm = escapetime
     elif(mode == "Point Trap"):
@@ -851,7 +855,7 @@ class buttonopenconsole(button):
         print(self.hr)
         screen.blit(checkconsole.returninfo()[0], checkconsole.returninfo()[1])
         pygame.display.flip()
-        optionstring = "Console options:\n0: Exit console\n1: Save image\n2: Export state\n3: Import state\nChoose an option (enter associated digit): "
+        optionstring = "Console options:\n0: Exit console\n1: Save image\n2: Export state\n3: Import state\n4: Create custom hybrid\nChoose an option (enter associated digit): "
         while(True):
             option = input(optionstring)
             if(option == "0"):
@@ -867,6 +871,9 @@ class buttonopenconsole(button):
             elif(option == "3"):
                 print(self.hr)
                 self.importstate()
+            elif(option == "4"):
+                print(self.hr)
+                self.createhybrid()
             else:
                 optionstring = "Invalid answer; try again: "
 
@@ -990,6 +997,9 @@ class buttonopenconsole(button):
                 statestring = "Invalid state; try again: "
         print(self.hr)
 
+    def createhybrid(self):
+        pass
+
 class buttonresetzoom(button):
     def __init__(self, x, y, width, height, text):
         super(buttonresetzoom, self).__init__(x, y, width, height, text)
@@ -1040,10 +1050,16 @@ zoomjulia = False
 focusjulia = False
 reallock = False
 imaglock = False
-fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid"]
+fractals = ["Mandelbrot Set", "Cubic Mandelbrot", "Quartic Mandelbrot", "Quintic Mandelbrot", "Burning Ship", "Celtic Fractal", "Buffalo Fractal", "Mandelbar Tricorn", "Burningbrot Hybrid", "Mandelship Hybrid", "Custom Hybrid"]
 fractal = fractals[0]
 viewmode = False
 trapvoid = True
+
+hybridfile = open("customhybrid.txt", "r")
+customhybrid = hybridfile.read().splitlines()
+hybridfile.close()
+for i in range(len(customhybrid)):
+    customhybrid[i] = funcmappings[customhybrid[i]]
 
 Image.open("defaultset.png").save("set.png")
 Image.open("defaultset2.png").save("set2.png")
